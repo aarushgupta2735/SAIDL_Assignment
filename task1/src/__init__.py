@@ -3,4 +3,4 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-from transformer_config import TransformerConfig
+from task1.config.transformer_config import TransformerConfig

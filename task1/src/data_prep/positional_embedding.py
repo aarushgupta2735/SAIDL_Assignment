@@ -2,11 +2,10 @@ from src import *
 
 class PositionalEmbedding(nn.Module):
     def __init__(self,config:TransformerConfig):
+        super.__init__()
         self.T = config.context_window
         self.B = config.batch_size 
         self.C = config.embedding_size
-        self.embed = nn.Embedding(config.vocab_size,config.embedding_size)
-        dropModel = nn.Dropout(p=config.dropout)
     
     def forward(self,data): #adds positions encoding to (B,T,C) to give (B,T,C)
         pe = torch.zeros(self.T,self.C)
@@ -21,3 +20,4 @@ class PositionalEmbedding(nn.Module):
         #add to each batch
         for b in range(self.B):
             data[b]+=pe
+        return data

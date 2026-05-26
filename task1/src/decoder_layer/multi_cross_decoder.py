@@ -8,6 +8,6 @@ class MultiCrossDecoder(nn.Module):
         self.W0 = nn.Linear(config.embedding_size,config.embedding_size)
 
     def forward(self,xt):
-        heads_out = self.layers(xt)
+        heads_out = [layer(xt) for layer in self.layers]
         out = torch.cat(heads_out,dim=-1)
         return self.W0(out)

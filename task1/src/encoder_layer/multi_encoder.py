@@ -8,6 +8,6 @@ class MultiLayerEncoder(nn.Module):
         self.W0 = nn.Linear(config.embedding_size,config.embedding_size)
 
     def forward(self,xt):
-        head_out = self.layers(xt)
+        head_out = [layer(xt) for layer in self.layers]
         out = torch.cat(head_out,dim=-1)
         return self.W0(out)

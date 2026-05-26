@@ -22,6 +22,7 @@ class Tokensizer(nn.Module):
       out_y.append(t[1+i*self.T:1+(i+1)*self.T])
     xt = torch.tensor(out_x)
     yt=  torch.tensor(out_y)
+    return xt,yt
     
 
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from src import *
-from data_prep.tokensizer import Tokensizer
+from src.data_prep.tokensizer import Tokensizer
 from bpetokenizer import BPETokenizer
 
 @dataclass
@@ -16,6 +16,7 @@ class TransformerConfig:
     dff: int = 4*embedding_size
     dropout = 0.1
 
-
+    @property
     def d_k(self):
         return self.embedding_size//self.n_heads
+    

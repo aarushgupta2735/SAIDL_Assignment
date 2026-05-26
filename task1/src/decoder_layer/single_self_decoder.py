@@ -4,10 +4,10 @@ class SingleSelfDecoder(nn.Module):
   #masking
   def __init__(self,config:TransformerConfig):
     super().__init__()
-    self.T = config.layer_size
-    self.WQ = nn.Linear(config.layer_size,config.layer_size,bias=False)
-    self.WK = nn.Linear(config.layer_size,config.layer_size,bias=False)
-    self.WV = nn.Linear(config.layer_size,config.layer_size,bias=False)
+    self.T = config.d_k
+    self.WQ = nn.Linear(config.d_k,config.d_k,bias=False)
+    self.WK = nn.Linear(config.d_k,config.d_k,bias=False)
+    self.WV = nn.Linear(config.d_k,config.d_k,bias=False)
     self.dropModel = nn.Dropout(p=config.dropout)
 
   def forward(self,xt):

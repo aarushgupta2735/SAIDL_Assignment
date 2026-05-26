@@ -3,7 +3,7 @@ from src import *
 class SingleCrossDecoder(nn.Module):
   def __init__(self,config:TransformerConfig) -> None:
     super().__init__()
-    self.t = config.layer_size
+    self.t = config.d_k
     self.WQ = nn.Linear(self.t,self.t,bias=False)
     self.WK = nn.Linear(self.t,self.t,bias=False)
     self.WV = nn.Linear(self.t,self.t,bias=False)

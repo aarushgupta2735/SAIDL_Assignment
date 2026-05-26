@@ -1,7 +1,7 @@
 from src import *
 from data_prep.data_prep import DataPrep
-from encoder_layer import encoder_block
-from decoder_layer import decoder_block
+from encoder_layer.encoder_block import EncoderBlock
+from decoder_layer.decoder_block import DecoderBlock
 
 class Transformer(nn.Module):
     def __init__(self,config:TransformerConfig):
@@ -12,22 +12,21 @@ class Transformer(nn.Module):
         #embed
         self.data_prep = DataPrep()
         #n_encoders
-        self.encoder_block = encoder_block()
+        self.encoder_block = EncoderBlock()
         #n_decoders
-        self.decoder_block = decoder_block()
+        self.decoder_block = DecoderBlock()
         #linear
         self.lin = nn.Linear(config.embedding_size,config.vocab_size)
 
-    def forward(self,xt,yt): #takes tensors of xt,yt after build dataset
+    def forward(self,data): 
         #embed + positional encoding + encoder output + decoder output + linear + softmax
-        xt = self.data_prep(xt) # N to (B,T,C)
-        yt = self.data_prep(yt) # N to (B,T,C)
+        xt_id,yt_id,xt_pe,yt_pe = self.data_prep(data) # N to (B,T) and (B,T,C)
 
-        encoder_output = self.encoder_block(xt) #(B,T,C)
-        decoder_output = self.decoder_block(yt,encoder_output) #(B,T,C)
+        encoder_output = self.encoder_block(xt_pe) #(B,T,C)
+        decoder_output = self.decoder_block(yt_pe,encoder_output) #(B,T,C)
 
         logits = self.lin(decoder_output) #(b,t,v)
 
-        loss = F.cross_entropy(logits.view(self.B*self.T,self.V),yt.view(self.B*self.T))
+        loss = F.cross_entropy(logits.view(self.B*self.T,self.V),yt_id.view(self.B*self.T))
 
         return logits,loss

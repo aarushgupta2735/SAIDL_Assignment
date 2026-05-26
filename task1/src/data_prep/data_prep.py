@@ -1,7 +1,7 @@
 from src import *
-from tokensizer import Tokensizer
-from positional_embedding import PositionalEmbedding
-from vector_embedding import VectorEmbedding
+from .tokensizer import Tokensizer
+from .positional_embedding import PositionalEmbedding
+from .vector_embedding import VectorEmbedding
 
 class DataPrep(nn.Module):
     def __init__(self):
@@ -12,9 +12,9 @@ class DataPrep(nn.Module):
         self.ve = VectorEmbedding()    
 
     def forward(self,data):
-        xt,yt = self.tokeniser(data) #(B,T)
-        xt_ve, yt_ve = self.ve(xt,yt) #(B,T,C)
+        xt_id,yt_id = self.tokeniser(data) #(B,T)
+        xt_ve, yt_ve = self.ve(xt_id,yt_id) #(B,T,C)
         xt_pe = self.pe(xt_ve) #(B,T,C)
         yt_pe = self.pe(yt_ve) #(B,T,C)
-        return xt_pe,yt_ve
-        
+        return xt_id,yt_id,xt_pe,yt_pe #(B,T) and #(B,T,C) 
+         

@@ -27,7 +27,14 @@ print(f"vocab_size: {config.vocab_size}")
 print(f"embedding_size: {config.embedding_size}")
 print(f"context_window: {config.context_window}")
 
-model = Transformer(config)
+# Check if tokenizer.encode yields a list and convert to a long tensor
+print("Tokenizing the training data...")
+train_tokens = tokenizer.encode(train_data)
+# Convert to tensor
+train_tokens = torch.tensor(train_tokens, dtype=torch.long, device=device)
+print(f"Tokenization complete. Total tokens: {len(train_tokens)}")
+
+model = Transformer(config).to(device)
 optimiser = torch.optim.Adam(model.parameters(),lr=0.0001,betas=(0.9,0.98),eps=pow(10,-9))
 
-loop(model,optimiser,train_data,TrainConfig.iterations)
+loop(model, optimiser, train_tokens, TrainConfig.iterations)

@@ -18,9 +18,9 @@ class Transformer(nn.Module):
         #linear
         self.lin = nn.Linear(config.embedding_size,config.vocab_size)
 
-    def forward(self,data): 
+    def forward(self, x, y): 
         #embed + positional encoding + encoder output + decoder output + linear + softmax
-        xt_id,yt_id,xt_pe,yt_pe = self.data_prep(data) # N to (B,T) and (B,T,C)
+        xt_id,yt_id,xt_pe,yt_pe = self.data_prep(x, y) # N to (B,T) and (B,T,C)
 
         encoder_output = self.encoder_block(xt_pe) #(B,T,C)
         decoder_output = self.decoder_block(yt_pe,encoder_output) #(B,T,C)

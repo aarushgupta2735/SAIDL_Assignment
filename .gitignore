@@ -1,0 +1,42 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# PyTorch checkpoints/models
+*.pth
+*.pt
+*.ckpt
+
+# VS Code settings
+.vscode/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+
+# Type hinting
+.mypy_cache/
+.pyre/
+
+# Large data binaries (if you want to ignore dataset txt/csv files, uncomment below)
+# *.txt
+# *.csv

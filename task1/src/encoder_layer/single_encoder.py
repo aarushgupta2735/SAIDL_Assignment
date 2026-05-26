@@ -4,9 +4,9 @@ class SingleEncoder(nn.Module):
   def __init__(self,config:TransformerConfig):
     super().__init__()
     self.t = config.d_k
-    self.WQ = nn.Linear(self.t,self.t,bias=False)
-    self.WK = nn.Linear(self.t,self.t,bias=False)
-    self.WV = nn.Linear(self.t,self.t,bias=False)
+    self.WQ = nn.Linear(config.embedding_size,self.t,bias=False)
+    self.WK = nn.Linear(config.embedding_size,self.t,bias=False)
+    self.WV = nn.Linear(config.embedding_size,self.t,bias=False)
     self.dropModel = nn.Dropout(p=config.dropout)
 
   def forward(self,xt):

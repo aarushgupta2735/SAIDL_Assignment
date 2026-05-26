@@ -30,7 +30,7 @@ config = TransformerConfig(
 
 # --- Testing Your Model ---
 # In your project, you should do this before passing the model to the optimizer:
-model = Transformer(TransformerConfig)
+model = Transformer(config)
 model = model.to(device) 
 
 # Verify the model is on the GPU by checking one of its parameters

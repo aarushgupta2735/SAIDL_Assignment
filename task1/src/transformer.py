@@ -1,7 +1,7 @@
 from src import *
-from data_prep.data_prep import DataPrep
-from encoder_layer.encoder_block import EncoderBlock
-from decoder_layer.decoder_block import DecoderBlock
+from src.data_prep.data_prep import DataPrep
+from src.encoder_layer.encoder_block import EncoderBlock
+from src.decoder_layer.decoder_block import DecoderBlock
 
 class Transformer(nn.Module):
     def __init__(self,config:TransformerConfig):
@@ -10,7 +10,7 @@ class Transformer(nn.Module):
         self.B = config.batch_size
         self.V = config.vocab_size
         #embed
-        self.data_prep = DataPrep()
+        self.data_prep = DataPrep(config)
         #n_encoders
         self.encoder_block = EncoderBlock(config)
         #n_decoders

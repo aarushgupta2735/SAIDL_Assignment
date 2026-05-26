@@ -1,10 +1,10 @@
 from src import *
-from encoder import Encoder
+from .encoder import Encoder
 
 class EncoderBlock(nn.Module):
   def __init__(self,config:TransformerConfig):
     super().__init__()
-    self.model = nn.Sequential(*[Encoder() for i in range(config.n_encoder_layers)])
+    self.model = nn.Sequential(*[Encoder(config) for i in range(config.n_encoder_layers)])
 
   def forward(self,input):
     return self.model(input)

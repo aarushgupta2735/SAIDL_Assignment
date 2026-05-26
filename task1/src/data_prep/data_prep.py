@@ -4,12 +4,12 @@ from .positional_embedding import PositionalEmbedding
 from .vector_embedding import VectorEmbedding
 
 class DataPrep(nn.Module):
-    def __init__(self):
+    def __init__(self, config: TransformerConfig):
         super().__init__()
         #only works if they all took one input + that one input was the output of the previous one: nn.Sequential(Tokensizer(), PositionalEmbedding(),VectorEmbedding())
-        self.tokeniser = Tokensizer()
-        self.pe = PositionalEmbedding()
-        self.ve = VectorEmbedding()    
+        self.tokeniser = Tokensizer(config)
+        self.pe = PositionalEmbedding(config)
+        self.ve = VectorEmbedding(config)    
 
     def forward(self,data):
         xt_id,yt_id = self.tokeniser(data) #(B,T)

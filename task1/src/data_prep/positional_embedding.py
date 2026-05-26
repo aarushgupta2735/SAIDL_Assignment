@@ -1,8 +1,9 @@
 from src import *
 
+
 class PositionalEmbedding(nn.Module):
     def __init__(self,config:TransformerConfig):
-        super.__init__()
+        super().__init__()
         self.T = config.context_window
         self.B = config.batch_size 
         self.C = config.embedding_size

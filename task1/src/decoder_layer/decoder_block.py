@@ -10,6 +10,6 @@ class DecoderBlock(nn.Module):
   def forward(self,y,encoder_input):
     out = y
     for decoder in self.decoders:
-      out = self.decoder(out,encoder_input)
+      out = decoder(out,encoder_input)
     return out
     

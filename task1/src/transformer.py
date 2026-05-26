@@ -12,9 +12,9 @@ class Transformer(nn.Module):
         #embed
         self.data_prep = DataPrep()
         #n_encoders
-        self.encoder_block = EncoderBlock()
+        self.encoder_block = EncoderBlock(config)
         #n_decoders
-        self.decoder_block = DecoderBlock()
+        self.decoder_block = DecoderBlock(config)
         #linear
         self.lin = nn.Linear(config.embedding_size,config.vocab_size)
 

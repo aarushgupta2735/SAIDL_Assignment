@@ -1,5 +1,5 @@
 import time
-from .metrics import perplexity, throughput
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -7,10 +7,12 @@ import math
 
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
-
+from .metrics import perplexity, throughput, peak_gpu_mb
 
 def evaluate(model, val_data, tokenizer, config:TransformerConfig, device) -> dict:
     model.eval()
+    torch.cuda.reset_peak_memory_stats()
+
     tokens = torch.tensor(tokenizer.encode(val_data))
 
     B,T = config.batch_size, config.context_window
@@ -42,6 +44,7 @@ def evaluate(model, val_data, tokenizer, config:TransformerConfig, device) -> di
         return {
             "val loss": avg_loss,
             "perplexity": perp,
-            "throughput": tp
+            "throughput": tp,
+            "peak_gpu_mb": peak_gpu_mb()
         }
     

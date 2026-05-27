@@ -12,3 +12,6 @@ def perplexity(loss):
 
 def throughput(num_tokens, time_seconds):
     return num_tokens / time_seconds
+
+def peak_gpu_mb():
+    return torch.cuda.max_memory_allocated() / (1024 * 1024)

@@ -1,8 +1,11 @@
+import sys
 import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import torch
 
 #change device to gpu if available
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 from src.transformer import Transformer
 from config.transformer_config import TransformerConfig

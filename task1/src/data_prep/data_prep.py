@@ -1,5 +1,4 @@
 from src import *
-from .tokensizer import Tokensizer
 from .positional_embedding import PositionalEmbedding
 from .vector_embedding import VectorEmbedding
 

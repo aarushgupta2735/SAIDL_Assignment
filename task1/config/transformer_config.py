@@ -3,8 +3,8 @@ from dataclasses import dataclass
 @dataclass
 class TransformerConfig:
     vocab_size : int
-    n_encoder_layers: int = 6
-    n_decoder_layers: int = 6
+    n_encoder_layers: int = 2 #6 : Reduced to prevent overfitting
+    n_decoder_layers: int = 2 #6 : Reduced to prevent overfitting
     context_window: int = 1024 #T
     batch_size: int = 16 #B
     embedding_size: int =  64 #d_model C

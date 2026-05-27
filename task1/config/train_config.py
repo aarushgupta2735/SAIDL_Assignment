@@ -5,7 +5,7 @@ from src import *
 class TrainConfig():
     step_num: int = 1
     warmup_steps: int = 4000
-    iterations: int = 1000
+    iterations: int = 5000
 
     
     

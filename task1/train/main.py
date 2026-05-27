@@ -38,4 +38,4 @@ print(torch.cuda.is_available())
 print(next(model.parameters()).device)
 print(train_tokens.device)
 
-loop(model, optimiser, train_tokens, TrainConfig.iterations)
+loop(model, optimiser, train_tokens, device, config, TrainConfig)

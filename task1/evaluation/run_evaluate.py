@@ -8,12 +8,13 @@ from evaluation.evaluate import evaluate
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+tokenizer = tiktoken.get_encoding("gpt2")
+config = TransformerConfig(vocab_size= tokenizer.n_vocab())
+
 model = Transformer(config=TransformerConfig).to(device)
 
 with open(os.path.join(os.path.dirname(__file__), "../data/wiki.val.txt"), encoding="utf-8") as f:
     val_data = f.read()
-
-tokenizer = tiktoken.get_encoding("gpt2")
 
 model.load_state_dict(torch.load(os.path.join(os.path.dirname(__file__), "../model_checkpoint.pt")))
 

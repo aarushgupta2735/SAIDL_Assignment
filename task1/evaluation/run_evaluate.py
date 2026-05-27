@@ -1,11 +1,10 @@
 import tiktoken
 import os
-import sys
 import torch
 
 from src.transformer import Transformer
 from config.transformer_config import TransformerConfig
-from evaluate import evaluate
+from evaluation.evaluate import evaluate
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

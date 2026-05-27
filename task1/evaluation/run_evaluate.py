@@ -1,7 +1,12 @@
 import tiktoken
 import os
-from evaluation import *
-from .evaluate import evaluate
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import torch
+
+from src.transformer import Transformer
+from config.transformer_config import TransformerConfig
+from evaluate import evaluate
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

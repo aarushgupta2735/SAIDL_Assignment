@@ -11,16 +11,16 @@ from src.transformer import Transformer
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 from train.loop import loop
-from bpetokenizer import BPETokenizer   
+import tiktoken
 
 with open(os.path.join(os.path.dirname(__file__), "../data/wiki.train.txt"), encoding="utf-8") as f:
     train_data = f.read()
 
-tokenizer = BPETokenizer()
-tokenizer.train(train_data, vocab_size=10000, min_frequency=2)
+print("Loading tiktoken encoding...")
+tokenizer = tiktoken.get_encoding("gpt2")
 
 config = TransformerConfig(
-    vocab_size = tokenizer.vocab_size  
+    vocab_size = tokenizer.n_vocab
 )
 
 print(f"vocab_size: {config.vocab_size}")

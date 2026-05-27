@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from bpetokenizer import BPETokenizer
 
 @dataclass
 class TransformerConfig:

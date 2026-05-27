@@ -8,4 +8,4 @@ dependencies:
   - jupyterlab
   - pip:
     - torch
-    - bpetokenizer
+    - tiktoken

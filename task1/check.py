@@ -1,7 +1,7 @@
 import torch
 from src.transformer import Transformer
 from config.transformer_config import TransformerConfig  
-from bpetokenizer import BPETokenizer
+import tiktoken
 
 import os
 #change device to gpu if available
@@ -19,13 +19,12 @@ print(f"Default tensor location: {x.device}")  # Output: cpu
 x = x.to(device)
 print(f"Moved tensor location: {x.device}")    # Output: cuda:0 (if GPU is active)
 
-tokenizer = BPETokenizer()
+tokenizer = tiktoken.get_encoding("gpt2")
 with open("./data/wiki.train.txt", encoding="utf-8") as f:
     train_data = f.read()
-tokenizer.train(train_data, vocab_size=10000, min_frequency=2)
 
 config = TransformerConfig(
-    vocab_size = tokenizer.vocab_size  
+    vocab_size = tokenizer.n_vocab  
 )
 
 # --- Testing Your Model ---

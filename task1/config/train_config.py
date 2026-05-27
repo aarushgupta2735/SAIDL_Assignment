@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from src import *
-from bpetokenizer import BPETokenizer
 
 @dataclass
 class TrainConfig():

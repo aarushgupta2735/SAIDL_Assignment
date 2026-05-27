@@ -7,7 +7,7 @@ class TransformerConfig:
     n_decoder_layers: int = 2 #6 : Reduced to prevent overfitting
     context_window: int = 1024 #T
     batch_size: int = 16 #B
-    embedding_size: int =  64 #d_model C
+    embedding_size: int =  64 #d_model C #64
     n_heads: int = 8 #2
     dff: int = 256
     dropout: float = 0.1

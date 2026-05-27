@@ -1,6 +1,13 @@
 import time
 from .metrics import perplexity, throughput
-from evaluation import *
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+
+from config.transformer_config import TransformerConfig
+from config.train_config import TrainConfig
+
 
 def evaluate(model, val_data, tokenizer, config:TransformerConfig, device) -> dict:
     model.eval()

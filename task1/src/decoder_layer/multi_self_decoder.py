@@ -1,4 +1,11 @@
-from src import *
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+
+from config.transformer_config import TransformerConfig
+from config.train_config import TrainConfig
+
 from .single_self_decoder import SingleSelfDecoder
 
 class MultiSelfDecoder(nn.Module):

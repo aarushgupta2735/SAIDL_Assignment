@@ -1,4 +1,11 @@
-from src import *
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+
+from config.transformer_config import TransformerConfig
+from config.train_config import TrainConfig
+
 from src.data_prep.data_prep import DataPrep
 from src.encoder_layer.encoder_block import EncoderBlock
 from src.decoder_layer.decoder_block import DecoderBlock

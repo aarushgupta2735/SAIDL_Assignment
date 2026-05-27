@@ -1,4 +1,11 @@
-from src import *
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import math
+
+from config.transformer_config import TransformerConfig
+from config.train_config import TrainConfig
+
 from .multi_cross_decoder import MultiCrossDecoder
 from .multi_self_decoder import MultiSelfDecoder
 from src.feedforward import FeedForward

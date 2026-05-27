@@ -1,17 +1,40 @@
-#Model Evaluation Script for Task 1
-from src import *
+import time
+from .metrics import perplexity, throughput
+from evaluation import *
 
-def evaluate(model, device):
+def evaluate(model, val_data, tokenizer, config:TransformerConfig, device) -> dict:
     model.eval()
+    tokens = torch.tensor(tokenizer.encode(val_data))
+
+    B,T = config.batch_size, config.context_window
     total_loss = 0.0
-    criterion = nn.CrossEntropyLoss()
-    
+    n_batches = 0
+    n_tokens = 0
+
+    start = time.time()
+
     with torch.no_grad():
-        for batch in dataloader:
-            xt_id, yt_id, xt_pe, yt_pe = [x.to(device) for x in batch]
-            output = model(xt_id, yt_id, xt_pe, yt_pe)
-            loss = criterion(output.view(-1, output.size(-1)), yt_id.view(-1))
+        for i in range(0,len(tokens)-(B*T)-1, B*T):
+            xt = torch.stack([tokens[i+j*T:i+(j+1)*T] for j in range(B)], dim=0).to(device)
+            yt = torch.stack([tokens[i+j*T+1:i+(j+1)*T+1] for j in range(B)], dim=0).to(device)
+            _,loss= model(xt,yt)
+
             total_loss += loss.item()
+            n_batches += 1
+            n_tokens += B*T
+        
+        elapsed_time = time.time() - start
+
+        avg_loss = total_loss/n_batches
+
+        perp = perplexity(avg_loss)
+        tp = throughput(n_tokens, elapsed_time)
+
+        model.train()
+
+        return {
+            "val loss": avg_loss,
+            "perplexity": perp,
+            "throughput": tp
+        }
     
-    avg_loss = total_loss / len(dataloader)
-    return avg_loss

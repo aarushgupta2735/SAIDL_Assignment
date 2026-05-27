@@ -4,9 +4,6 @@ from config.transformer_config import TransformerConfig
 import tiktoken
 
 import os
-#change device to gpu if available
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 # Define your target device dynamically
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -32,5 +29,5 @@ config = TransformerConfig(
 model = Transformer(config)
 model = model.to(device) 
 
-# Verify the model is on the GPU by checking one of its parameters
+# Verify the model is on the GPU by checking one of its parameters)
 print(f"Model location: {next(model.parameters()).device}")

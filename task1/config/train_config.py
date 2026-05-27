@@ -6,8 +6,7 @@ import math
 
 @dataclass
 class TrainConfig():
-    step_num: int = 1
-    warmup_steps: int = 400
+    warmup_steps: int = 4000
     iterations: int = 10000
 
     

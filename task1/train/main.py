@@ -32,6 +32,10 @@ train_tokens = torch.tensor(train_tokens, dtype=torch.long, device=device)
 print(f"Tokenization complete. Total tokens: {len(train_tokens)}")
 
 model = Transformer(config).to(device)
-optimiser = torch.optim.Adam(model.parameters(),lr=0.0001,betas=(0.9,0.98),eps=pow(10,-9))
+optimiser = torch.optim.Adam(model.parameters(),lr=0,betas=(0.9,0.98),eps=pow(10,-9))
+
+print(torch.cuda.is_available())
+print(next(model.parameters()).device)
+print(train_tokens.device)
 
 loop(model, optimiser, train_tokens, TrainConfig.iterations)

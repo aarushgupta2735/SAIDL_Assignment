@@ -6,15 +6,14 @@ import math
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 
+from .positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
+
 PE = {
-    "standard": StandardPositionalEmbedding,
+    "sinusoidal": StandardPositionalEmbedding,
     "rotatory": nn.Identity,
     "linear": nn.Identity,
     "attention": nn.Identity,
 }
-
-from .positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
-
 from .vector_embedding import VectorEmbedding
 
 class DataPrep(nn.Module):

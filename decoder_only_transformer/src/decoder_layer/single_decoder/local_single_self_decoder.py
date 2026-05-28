@@ -33,8 +33,9 @@ class LocalSingleSelfDecoder(nn.Module):
     T = self.T
     d_k = self.d_k
 
-    Q_chunks = [Q[:,j:j+w,:].float() for j in range(0,T,w)] #Q_chunk[0] : (1,w,d_k)
-    K_chunks = [K[:,j:j+w,:].float() for j in range(0,T,w)] 
+    Q_chunks = [Q[:,j:j+w,:].float() for j in range(0,T,w)] #Q_chunk[0] : (B,w,d_k)
+    K_chunks = [K[:,j:j+w,:].float() for j in range(0,T,w)]  #K_chunks.T(-2,-1) : (B,d_k,w) 
+    # @ = ( B,w,d_k) @ (B,d_k,w) -> (B,w,w) @(B,w,d_k) -> (B,w,d_k)
     V_chunks = [V[:,j:j+w,:].float() for j in range(0,T,w)]
 
     chunk_curr = torch.stack([(F.softmax((Q_chunks[i]@K_chunks[i].transpose(-2,-1)/d_k**0.5).masked_fill(self.mask_curr, float('-inf')),dim=-1,dtype = torch.float)@V_chunks[i])[0] for i in range(len(Q_chunks))])

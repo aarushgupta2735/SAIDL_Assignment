@@ -7,7 +7,7 @@ from config.transformer_config import TransformerConfig
 
 from .single_decoder.standard_single_self_decoder import StandardSingleSelfDecoder
 from .single_decoder.local_single_self_decoder import LocalSingleSelfDecoder
-from .single_decoder.block_sparse_single_self_decoder_block import SparseSingleSelfDecoder
+from .single_decoder.block_sparse_single_self_decoder_block import BlockSparseSingleSelfDecoder 
 from .single_decoder.mqa_single_self_decoder import MQASingleSelfDecoder
 
 #Might need to change
@@ -15,7 +15,7 @@ from .single_decoder.mqa_single_self_decoder import MQASingleSelfDecoder
 Attention = {
     "standard": StandardSingleSelfDecoder,
     "local": LocalSingleSelfDecoder,
-    "sparse": SparseSingleSelfDecoder,
+    "sparse": BlockSparseSingleSelfDecoder,
     "mqa": MQASingleSelfDecoder
 }
 

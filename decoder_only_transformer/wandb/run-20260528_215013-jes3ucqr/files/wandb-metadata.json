@@ -1,0 +1,38 @@
+{
+  "os": "Windows-10-10.0.26200-SP0",
+  "python": "CPython 3.11.15",
+  "startedAt": "2026-05-28T16:20:13.858221Z",
+  "program": "-m train.train",
+  "git": {
+    "remote": "https://github.com/aarushgupta2735/SAIDL_Assignment",
+    "commit": "082ea15f6a353c9c0bac7d4fa1f397e3a594380a"
+  },
+  "email": "aarushgupta2735@gmail.com",
+  "root": "C:\\Users\\admin\\Documents\\SAIDL_Assignment\\decoder_only_transformer",
+  "host": "DESKTOP-AO89QNU",
+  "executable": "C:\\Users\\admin\\miniconda3\\envs\\rl-cuda-env\\python.exe",
+  "cpu_count": 24,
+  "cpu_count_logical": 32,
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "gpu_count": 1,
+  "disk": {
+    "/": {
+      "total": "542217596928",
+      "used": "504876699648"
+    }
+  },
+  "memory": {
+    "total": "68421812224"
+  },
+  "gpu_nvidia": [
+    {
+      "name": "NVIDIA GeForce RTX 5090",
+      "memoryTotal": "34190917632",
+      "cudaCores": 21760,
+      "architecture": "Blackwell",
+      "uuid": "GPU-7ace31a7-d7b8-6589-efb6-20678510aec2"
+    }
+  ],
+  "cudaVersion": "13.1",
+  "writerId": "6nzjaror7yl9gk9d329grsa8jjt0wpic"
+}

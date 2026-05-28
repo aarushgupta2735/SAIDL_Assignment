@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import torch
 import tiktoken
-
+import platform
 from src.transformer import Transformer
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
@@ -44,7 +44,12 @@ train_config = TrainConfig()
 
 # --- Model ---
 model = Transformer(config).to(device)
-model = torch.compile(model)
+
+if platform.system() != "Windows":
+    model = torch.compile(model)
+else:
+    print("Skipping torch.compile (not supported on Windows without Triton)")
+
 total_params = sum(p.numel() for p in model.parameters())
 print(f"Model parameters: {total_params:,}")
 

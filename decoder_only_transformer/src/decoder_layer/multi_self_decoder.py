@@ -8,7 +8,7 @@ from config.transformer_config import TransformerConfig
 #Might need to change
 from .single_decoder.standard_single_self_decoder import StandardSingleSelfDecoder
 from .single_decoder.local_single_self_decoder import LocalSingleSelfDecoder
-from .single_decoder.sparse_single_self_decoder import SparseSingleSelfDecoder
+from .single_decoder.block_sparse_single_self_decoder_block import SparseSingleSelfDecoder
 from .single_decoder.mqa_single_self_decoder import MQASingleSelfDecoder
 
 class MultiSelfDecoder(nn.Module):

@@ -8,7 +8,7 @@ import tiktoken
 from src.transformer import Transformer
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
-from train.loop import loop
+from loop import loop
 from evaluate.logger import ExperimentLogger
 
 # --- Device ---

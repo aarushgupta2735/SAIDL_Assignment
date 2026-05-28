@@ -13,6 +13,8 @@ import tiktoken
 with open(os.path.join(os.path.dirname(__file__), "../data/wiki.train.txt"), encoding="utf-8") as f:
     train_data = f.read()
 
+
+# Should be changed by data_prep
 print("Loading tiktoken encoding...")
 tokenizer = tiktoken.get_encoding("gpt2")
 

@@ -9,6 +9,7 @@ from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 from .metrics import perplexity, throughput, peak_gpu_mb
 
+#FINE
 def evaluate(model, val_data, tokenizer, config:TransformerConfig, device) -> dict:
     model.eval()
     torch.cuda.reset_peak_memory_stats()

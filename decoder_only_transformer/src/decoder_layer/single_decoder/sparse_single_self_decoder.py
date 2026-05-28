@@ -7,7 +7,7 @@ from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 
 
-class SingleSelfDecoder(nn.Module):
+class SparseSingleSelfDecoder(nn.Module):
   #masking
   def __init__(self,config:TransformerConfig):
     super().__init__()

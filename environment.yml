@@ -9,3 +9,4 @@ dependencies:
   - pip:
     - torch
     - tiktoken
+    - wandb

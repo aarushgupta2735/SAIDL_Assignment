@@ -38,12 +38,12 @@ class LocalSingleSelfDecoder(nn.Module):
     # @ = ( B,w,d_k) @ (B,d_k,w) -> (B,w,w) @(B,w,d_k) -> (B,w,d_k)
     V_chunks = [V[:,j:j+w,:].float() for j in range(0,T,w)]
 
-    chunk_curr = torch.stack([(F.softmax((Q_chunks[i]@K_chunks[i].transpose(-2,-1)/d_k**0.5).masked_fill(self.mask_curr, float('-inf')),dim=-1,dtype = torch.float)@V_chunks[i])[0] for i in range(len(Q_chunks))])
-    chunk_prev = torch.stack([(F.softmax((Q_chunks[i]@K_chunks[i-1].transpose(-2,-1)/d_k**0.5).masked_fill(~self.mask_prev,float('-inf')),dim=-1,dtype = torch.float)@V_chunks[i])[0] for i in range(1,len(Q_chunks))])
+    chunk_curr = torch.stack([(F.softmax((Q_chunks[i]@K_chunks[i].transpose(-2,-1)/d_k**0.5).masked_fill(self.mask_curr, float('-inf')),dim=-1,dtype = torch.float)@V_chunks[i]) for i in range(len(Q_chunks))])
+    chunk_prev = torch.stack([(F.softmax((Q_chunks[i]@K_chunks[i-1].transpose(-2,-1)/d_k**0.5).masked_fill(~self.mask_prev,float('-inf')),dim=-1,dtype = torch.float)@V_chunks[i]) for i in range(1,len(Q_chunks))])
 
     chunk0 = chunk_curr[0]
     chunk_i = [chunk_curr[i+1]+chunk_prev[i] for i in range(0,(chunk_prev.shape)[0])]
-    res = torch.cat((chunk0,*chunk_i),dim=0).nan_to_num(0).reshape(1,12,4)
+    res = torch.cat((chunk0,*chunk_i),dim=1).nan_to_num(0)
 
     #dropout
     return self.dropModel(res)

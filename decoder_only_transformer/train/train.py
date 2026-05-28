@@ -4,7 +4,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 import torch
 import tiktoken
-import platform
+
 from src.transformer import Transformer
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
@@ -44,6 +44,7 @@ train_config = TrainConfig()
 
 # --- Model ---
 model = Transformer(config).to(device)
+
 
 if platform.system() != "Windows":
     model = torch.compile(model)

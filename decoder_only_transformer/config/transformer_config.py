@@ -24,6 +24,7 @@ class TransformerConfig:
     window_size: int          = 128           # sliding window attention : w - > since transformer is decoder only we will use w/2 after each token
     block_size: int           = 64            # sparse block attention
     n_kv_heads: int           = 2             # grouped query attention
+    k_relative_pe: int        = 1023 #(T-1)
  
     # --- Experiment identity ---
     experiment_name: str      = "baseline"

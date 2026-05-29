@@ -6,15 +6,24 @@ import math
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 
+from .mqa_multi_self_decoder import MQAMultiSelfDecoder
 from .multi_self_decoder import MultiSelfDecoder
+
 from src.feedforward import FeedForward
 from src.add_and_norm import AddNorm
+
+Attention = {
+    "standard": MultiSelfDecoder,
+    "local": MultiSelfDecoder,
+    "sparse": MultiSelfDecoder,
+    "mqa": MQAMultiSelfDecoder
+}
 
 class Decoder(nn.Module):
   #multi-attention -- > add and norm --> feed forward --> add and norm
   def __init__(self, config: TransformerConfig):
     super().__init__()
-    self.ma_self = MultiSelfDecoder(config)
+    self.ma_self = Attention[config.attention](config)
     self.ff = FeedForward(config)
     self.an1 = AddNorm(config)
     self.an2 = AddNorm(config)

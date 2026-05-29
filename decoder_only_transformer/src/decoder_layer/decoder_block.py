@@ -8,6 +8,8 @@ from config.train_config import TrainConfig
 
 from .decoder import Decoder
 
+
+
 class DecoderBlock(nn.Module):
   def __init__(self,config:TransformerConfig):
     super().__init__()

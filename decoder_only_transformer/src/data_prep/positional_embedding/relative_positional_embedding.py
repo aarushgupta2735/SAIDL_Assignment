@@ -11,22 +11,24 @@ from config.train_config import TrainConfig
 class RelativePositionalEmbedding(nn.Module):
     def __init__(self,config:TransformerConfig):
         super().__init__()
+        
         self.T = config.context_window
         self.B = config.batch_size 
         self.C = config.embedding_size
-        self.dropModel = nn.Dropout(p=config.dropout)
+        self.k = config.k_relative_pe
+        self.d_k = config.d_k
         
-        # Create positional encoding ONCE in init, then register as buffer so it moves to GPU automatically
-        pe = torch.zeros(self.T, self.C)
-        pos = torch.arange(0, self.T, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, self.C, 2).float() * (-math.log(10000.0) / self.C))
-        
-        pe[:, 0::2] = torch.sin(pos * div_term)
-        pe[:, 1::2] = torch.cos(pos * div_term)
-        # Register as buffer so it is saved with model state and moves to device along with model
-        self.register_buffer('pe', pe)
-    
-    def forward(self,data): #adds positions encoding to (B,T,C) to give (B,T,C)
+        self.W = torch.randn((2*self.k+1,self.d_k),dtype=float) 
+        self.embed = torch.nn.Embedding(2*self.k+1,self.d_k)
 
-        # data is (B, T, C), self.pe is (T, C). 
-        return self.dropModel(data + self.pe)
+        # Create positional encoding ONCE in init, then register as buffer so it moves to GPU automatically
+        q_pos = torch.arange(self.T).view(self.T,1)
+        k_pos = torch.arange(self.T).view(1,self.T)
+        relative = (q_pos-k_pos).clamp(-self.k,self.k)+self.k
+
+        R = self.embed(relative)
+        self.register_buffer('R', R)
+    
+    def forward(self,Q): #adds positions encoding to (B,T,C) to give (B,T,C)
+
+        return torch.einsum("bid,ijd->bij",Q.float(),self.R.float())

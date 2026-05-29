@@ -10,8 +10,9 @@ from data_prep.positional_embedding.rotatory_positional_embedding import Rotator
 
 class BlockSparseSingleSelfDecoder(nn.Module):
   #masking
-  def __init__(self,config:TransformerConfig):
+  def __init__(self,config:TransformerConfig,head_n):
     super().__init__()
+    self.head_n = head_n
     self.pe = config.positional_encoding
     if(self.pe=="Rotatory"): 
       self.rotate = RotatoryPositionalEmbedding(config)

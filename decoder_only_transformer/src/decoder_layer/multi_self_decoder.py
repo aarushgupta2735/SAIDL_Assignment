@@ -24,7 +24,7 @@ Attention = {
 class MultiSelfDecoder(nn.Module):
     def __init__(self,config:TransformerConfig) -> None:
         super().__init__()
-        self.layers = nn.ModuleList([Attention[config.attention](config) for i in range(config.n_heads)])
+        self.layers = nn.ModuleList([Attention[config.attention](config,i) for i in range(config.n_heads)])
         self.W0 = nn.Linear(config.embedding_size,config.embedding_size)
 
     def forward(self,xt):

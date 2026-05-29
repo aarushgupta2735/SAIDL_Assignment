@@ -9,8 +9,9 @@ from config.train_config import TrainConfig
 
 class LocalSingleSelfDecoder(nn.Module):
   #masking
-  def __init__(self,config:TransformerConfig):
+  def __init__(self,config:TransformerConfig,head_n):
     super().__init__()
+    self.head_n = head_n
     self.d_k = config.d_k
     self.T = config.context_window
     self.C = config.embedding_size

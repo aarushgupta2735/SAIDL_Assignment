@@ -20,5 +20,5 @@ class AttentionPositionalEmbedding(nn.Module):
         self.slopes = torch.tensor([pow(2,-8/config.n_heads)**i for i in range(1,config.n_heads+1)],dtype=float)
         self.model = self.k_pos-self.q_pos
     
-    def forward(self,x,head_n): #adds the linear bias matrix based on nth head to Q.K(T) (taken as x)
+    def forward(self,x,head_n): #returns the linear bias matrix based on nth head to Q.K(T) (taken as x)
         return x+(self.model*self.slopes[head_n])

@@ -16,7 +16,7 @@ class TransformerConfig:
 
      # --- Swappable components (drives registries) ---
     attention: str = "Standard" #Local,Sparse,MQA
-    positional_encoding: str = "sinusoidal" #Rotatory,Relative,Attention  
+    positional_encoding: str = "Sinusoidal" #Rotatory,Relative,Attention  
     use_conv: bool            = False
     conv_type: str            = "none"        # "pre_attn", "interleaved", "depthwise", "gated_ffn"
  

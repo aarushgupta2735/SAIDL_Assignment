@@ -8,25 +8,17 @@ from config.train_config import TrainConfig
 
 
 
-class PositionalEmbedding(nn.Module):
+class AttentionPositionalEmbedding(nn.Module):
     def __init__(self,config:TransformerConfig):
         super().__init__()
         self.T = config.context_window
         self.B = config.batch_size 
         self.C = config.embedding_size
         self.dropModel = nn.Dropout(p=config.dropout)
-        
-        # Create positional encoding ONCE in init, then register as buffer so it moves to GPU automatically
-        pe = torch.zeros(self.T, self.C)
-        pos = torch.arange(0, self.T, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(torch.arange(0, self.C, 2).float() * (-math.log(10000.0) / self.C))
-        
-        pe[:, 0::2] = torch.sin(pos * div_term)
-        pe[:, 1::2] = torch.cos(pos * div_term)
-        # Register as buffer so it is saved with model state and moves to device along with model
-        self.register_buffer('pe', pe)
+        self.q_pos = torch.arange(self.T).view(self.T,1)
+        self.k_pos = torch.arange(self.T).view(1,self.T)
+        self.slopes = torch.tensor([pow(2,-8/config.n_heads)**i for i in range(1,config.n_heads+1)],dtype=float)
+        self.model = self.k_pos-self.q_pos
     
-    def forward(self,data): #adds positions encoding to (B,T,C) to give (B,T,C)
-
-        # data is (B, T, C), self.pe is (T, C). 
-        return self.dropModel(data + self.pe)
+    def forward(self,x,head_n): #adds the linear bias matrix based on nth head to Q.K(T) (taken as x)
+        return x+(self.model*self.slopes[head_n])

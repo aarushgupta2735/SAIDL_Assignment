@@ -8,7 +8,7 @@ from config.train_config import TrainConfig
 
 
 
-class PositionalEmbedding(nn.Module):
+class RelativePositionalEmbedding(nn.Module):
     def __init__(self,config:TransformerConfig):
         super().__init__()
         self.T = config.context_window

@@ -6,11 +6,25 @@ import math
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 
+from data_prep.positional_embedding.attention_positional_embedding import AttentionPositionalEmbedding
+from data_prep.positional_embedding.relative_positional_embedding import RelativePositionalEmbedding
+from data_prep.positional_embedding.rotatory_positional_embedding import RotatoryPositionalEmbedding
+from data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
+
+PE ={
+  "Standard": StandardPositionalEmbedding,
+  "Rotatory": RotatoryPositionalEmbedding,
+  "Relative": RelativePositionalEmbedding,
+  "Attention ": AttentionPositionalEmbedding
+}
+
 
 class LocalSingleSelfDecoder(nn.Module):
   #masking
   def __init__(self,config:TransformerConfig,head_n):
     super().__init__()
+    self.pe = config.positional_encoding
+    self.pe_model = PE[self.pe](config)
     self.head_n = head_n
     self.d_k = config.d_k
     self.T = config.context_window
@@ -34,6 +48,10 @@ class LocalSingleSelfDecoder(nn.Module):
     T = self.T
     d_k = self.d_k
 
+    if(self.pe=="Rotatory"):
+      Q = self.pe_model(Q)
+      K = self.pe_model(K)
+
     Q_chunks = [Q[:,j:j+w,:].float() for j in range(0,T,w)] #Q_chunk[0] : (B,w,d_k)
     K_chunks = [K[:,j:j+w,:].float() for j in range(0,T,w)]  #K_chunks.T(-2,-1) : (B,d_k,w) 
     # @ = ( B,w,d_k) @ (B,d_k,w) -> (B,w,w) @(B,w,d_k) -> (B,w,d_k)
@@ -41,6 +59,12 @@ class LocalSingleSelfDecoder(nn.Module):
 
     chunk_curr = torch.stack([(F.softmax((Q_chunks[i]@K_chunks[i].transpose(-2,-1)/d_k**0.5).masked_fill(self.mask_curr, float('-inf')),dim=-1,dtype = torch.float)@V_chunks[i]) for i in range(len(Q_chunks))])
     chunk_prev = torch.stack([(F.softmax((Q_chunks[i]@K_chunks[i-1].transpose(-2,-1)/d_k**0.5).masked_fill(~self.mask_prev,float('-inf')),dim=-1,dtype = torch.float)@V_chunks[i]) for i in range(1,len(Q_chunks))])
+
+    #### YET TO INTEGRATE
+    if(self.pe=="Attention"):
+      h=self.pe_model(h,self.head_n)
+    if(self.pe=="Relative"):
+      h+=self.pe_model(Q)
 
     chunk0 = chunk_curr[0]
     chunk_i = [chunk_curr[i+1]+chunk_prev[i] for i in range(0,(chunk_prev.shape)[0])]

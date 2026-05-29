@@ -6,11 +6,25 @@ import math
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 
+from data_prep.positional_embedding.attention_positional_embedding import AttentionPositionalEmbedding
+from data_prep.positional_embedding.relative_positional_embedding import RelativePositionalEmbedding
+from data_prep.positional_embedding.rotatory_positional_embedding import RotatoryPositionalEmbedding
+from data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
+
+PE ={
+  "Standard": StandardPositionalEmbedding,
+  "Rotatory": RotatoryPositionalEmbedding,
+  "Relative": RelativePositionalEmbedding,
+  "Attention ": AttentionPositionalEmbedding
+}
+
 
 class MQASingleSelfDecoder(nn.Module):
   #masking
   def __init__(self,config:TransformerConfig,head_n):
     super().__init__()
+    self.pe = config.positional_encoding
+    self.pe_model = PE[self.pe](config)
     self.head_n = head_n
     self.d_k = config.d_k
     self.T = config.context_window
@@ -22,7 +36,19 @@ class MQASingleSelfDecoder(nn.Module):
 
   def forward(self,xt,K,V):
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k)
-    h = (Q@K.transpose(-2,-1))/self.d_k**0.5 #h: (B,T,d_k)@(B,d_k,T) -> (B,T,T)
+
+    if(self.pe=="Rotatory"):
+      Q = self.pe_model(Q)
+      K = self.pe_model(K)
+
+    h = (Q@K.transpose(-2,-1))
+
+    if(self.pe=="Attention"):
+      h=self.pe_model(h,self.head_n)
+    elif(self.pe=="Relative"):
+      h+=self.pe_model(Q)
+
+    h = h/self.d_k**0.5 #h: (B,T,d_k)@(B,d_k,T) -> (B,T,T)
 
     h = h.masked_fill(self.mask, float('-inf'))
 

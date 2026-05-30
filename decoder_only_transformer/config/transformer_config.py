@@ -17,18 +17,21 @@ class TransformerConfig:
      # --- Swappable components (drives registries) ---
     attention: str = "Standard" #Local,Sparse,MQA
     positional_encoding: str = "Sinusoidal" #Rotatory,Relative,Attention  
-    use_conv: bool            = False
-    conv_type: str            = "none"        # "pre_attn", "interleaved", "depthwise", "gated_ffn"
+    use_conv: bool = False
+    conv_type: str = "none"        # "pre_attn", "interleaved", "depthwise", "gated_ffn"
  
     # --- Attention variant specific ---
-    window_size: int          = 128           # sliding window attention : w - > since transformer is decoder only we will use w/2 after each token
-    block_size: int           = 64            # sparse block attention
-    n_kv_heads: int           = 2             # grouped query attention
-    k_relative_pe: int        = 1023 #(T-1)
+    window_size: int = 128           # sliding window attention : w - > since transformer is decoder only we will use w/2 after each token
+    block_size: int  = 64            # sparse block attention
+    #n_kv_heads: int   = 2             # grouped query attention -> not need explicitly
  
     # --- Experiment identity ---
-    experiment_name: str      = "baseline"
-    run_name: Optional[str]   = None          # auto-generated from config if None
+    experiment_name: str = "baseline"
+    run_name: Optional[str] = None          # auto-generated from config if None
+
+    @property
+    def k_relative_pe(self):
+        return self.context_window-1 #assumed to be T-1. Can be changed to other t-k
 
     @property
     def d_k(self):
@@ -60,3 +63,11 @@ class TransformerConfig:
             f"_H{self.n_heads}"
             f"_C{self.embedding_size}"
         )
+
+    def __post_init__(self):
+        if(self.window_size>=self.context_window):
+            raise ValueError(f'Window Size of sliding window attention ({self.window_size} must be less than context window ({self.context_window}))')
+        if(self.embedding_size%self.n_heads!=0):
+            raise ValueError(f'Embedding Size = {self.embedding_size} must be divisible by n_heads = {self.n_heads}')
+        if(not(self.use_conv) and self.conv_type!="none"):
+            raise ValueError(f'Conv type cannot be a valid value')

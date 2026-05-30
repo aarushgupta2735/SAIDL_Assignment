@@ -9,10 +9,10 @@ from config.train_config import TrainConfig
 from .positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
 
 PE = {
-    "sinusoidal": StandardPositionalEmbedding,
-    "rotatory": nn.Identity,
-    "linear": nn.Identity,
-    "attention": nn.Identity,
+    "Sinusoidal": StandardPositionalEmbedding,
+    "Rotatory": nn.Identity,
+    "Relative": nn.Identity,
+    "Attention": nn.Identity,
 }
 from .vector_embedding import VectorEmbedding
 

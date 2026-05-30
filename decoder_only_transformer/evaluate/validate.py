@@ -5,8 +5,6 @@ Kept separate from training so it can be called with any model/dataset.
 
 import torch
 import torch.nn.functional as F
-from torch.cuda.amp import autocast
-
 
 @torch.no_grad()
 def evaluate(model, val_tokens, config, num_batches: int = 50) -> float:
@@ -26,7 +24,8 @@ def evaluate(model, val_tokens, config, num_batches: int = 50) -> float:
         x = torch.stack([val_tokens[j : j + config.context_window] for j in ix])
         y = torch.stack([val_tokens[j + 1 : j + 1 + config.context_window] for j in ix])
 
-        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+        device_type = next(model.parameters()).device.type
+        with torch.autocast(device_type=device_type, dtype=torch.bfloat16):
             _, loss = model(x, y)
 
         total_loss += loss.item()

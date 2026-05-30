@@ -15,7 +15,7 @@ PE ={
   "Standard": StandardPositionalEmbedding,
   "Rotatory": RotatoryPositionalEmbedding,
   "Relative": RelativePositionalEmbedding,
-  "Attention ": AttentionPositionalEmbedding
+  "Attention": AttentionPositionalEmbedding
 }
 
 
@@ -44,7 +44,9 @@ class MQASingleSelfDecoder(nn.Module):
     h = (Q@K.transpose(-2,-1))
 
     if(self.pe=="Attention"):
+      h = torch.unsqueeze(h,0)
       h=self.pe_model(h,self.head_n)
+      h=torch.squeeze(h,0)
     elif(self.pe=="Relative"):
       h+=self.pe_model(Q)
 

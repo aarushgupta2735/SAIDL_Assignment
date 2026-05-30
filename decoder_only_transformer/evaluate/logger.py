@@ -49,7 +49,8 @@ class ExperimentLogger:
 
     def on_iter_start(self):
         """Call at the top of each training iteration."""
-        torch.cuda.synchronize()
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         self._iter_start = time.perf_counter()
 
     def on_iter_end(
@@ -60,7 +61,8 @@ class ExperimentLogger:
         grad_norm: float,
     ):
         """Call at the end of each training iteration."""
-        torch.cuda.synchronize()
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         elapsed = time.perf_counter() - self._iter_start
         throughput = self._tokens_per_iter / elapsed  # tokens/sec
 
@@ -116,7 +118,8 @@ class ExperimentLogger:
             with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
                 _ = model.generate_next_token(generated)
 
-        torch.cuda.synchronize()
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
         start = time.perf_counter()
         for _ in range(repeats):
             seq = dummy_input.clone()
@@ -124,11 +127,13 @@ class ExperimentLogger:
                 with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
                     next_tok = model.generate_next_token(seq)
                 seq = torch.cat([seq, next_tok], dim=1)
-        torch.cuda.synchronize()
+        if torch.cuda.is_available():
+            torch.cuda.synchronize()
 
         total_tokens = gen_len * repeats
-        latency_ms = (time.perf_counter() - start) * 1000 / repeats
-        tokens_per_sec = total_tokens / (time.perf_counter() - start)
+        elapsed_tokens = (time.perf_counter() - start)
+        latency_ms =  elapsed_tokens* 1000 / repeats
+        tokens_per_sec = total_tokens / elapsed_tokens  
 
         wandb.log({
             "inference/latency_ms_per_sequence": latency_ms,

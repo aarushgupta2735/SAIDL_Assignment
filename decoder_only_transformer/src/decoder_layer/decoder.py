@@ -13,10 +13,10 @@ from src.feedforward import FeedForward
 from src.add_and_norm import AddNorm
 
 Attention = {
-    "standard": MultiSelfDecoder,
-    "local": MultiSelfDecoder,
-    "sparse": MultiSelfDecoder,
-    "mqa": MQAMultiSelfDecoder
+    "Standard": MultiSelfDecoder,
+    "Local": MultiSelfDecoder,
+    "Sparse": MultiSelfDecoder,
+    "Mqa": MQAMultiSelfDecoder
 }
 
 class Decoder(nn.Module):

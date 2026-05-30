@@ -21,4 +21,5 @@ class AttentionPositionalEmbedding(nn.Module):
         self.model = self.k_pos-self.q_pos
     
     def forward(self,x,head_n): #returns the linear bias matrix based on nth head to Q.K(T) (taken as x)
-        return x+(self.model*self.slopes[head_n])
+        (_,B,w,w) = x.shape
+        return x+(self.model[:w,:w]*self.slopes[head_n])

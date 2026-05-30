@@ -15,7 +15,7 @@ PE ={
   "Standard": StandardPositionalEmbedding,
   "Rotatory": RotatoryPositionalEmbedding,
   "Relative": RelativePositionalEmbedding,
-  "Attention ": AttentionPositionalEmbedding
+  "Attention": AttentionPositionalEmbedding
 }
 
 
@@ -58,14 +58,16 @@ class BlockSparseSingleSelfDecoder(nn.Module):
     # @ = ( B,w,d_k) @ (B,d_k,w) -> (B,w,w) @(B,w,d_k) -> (B,w,d_k)
     V_chunks = [V[:,j:j+w,:].float() for j in range(0,T,w)]
 
-    chunk_curr = tuple([(F.softmax((Q_chunks[i]@K_chunks[i].transpose(-2,-1)/d_k**0.5).masked_fill(self.mask, float('-inf')),dim=-1,dtype = torch.float)@V_chunks[i]) for i in range(len(Q_chunks))])
-    
-    #YET TO INTEGRATE 
+    chunk_curr = torch.stack([Q_chunks[i]@K_chunks[i].transpose(-2,-1) for i in range(len(Q_chunks))])
 
     if(self.pe=="Attention"):
-      h=self.pe_model(h,self.head_n)
+      chunk_curr=self.pe_model(chunk_curr,self.head_n)
     if(self.pe=="Relative"):
-      h+=self.pe_model(Q)
+      chunk_curr=self.pe_model(Q)
+
+    chunk_curr = chunk_curr.masked_fill(self.mask, float('-inf'))
+    chunk_curr = F.softmax(chunk_curr,dim=-1,dtype = torch.float)
+    chunk_curr = torch.stack([chunk_curr[i]@V_chunks[i] for i in range(len(chunk_curr))])
     
     res = torch.cat(chunk_curr,dim=1).nan_to_num(0) 
 

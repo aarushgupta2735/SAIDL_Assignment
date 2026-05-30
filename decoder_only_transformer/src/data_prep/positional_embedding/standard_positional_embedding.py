@@ -27,4 +27,4 @@ class StandardPositionalEmbedding(nn.Module):
     def forward(self,data): #adds positions encoding to (B,T,C) to give (B,T,C)
 
         # data is (B, T, C), self.pe is (T, C). 
-        return self.dropModel(data + torch.stack([self.pe] * data.size(0))) 
+        return self.dropModel(data + self.pe.unsqueeze(0).expand(self.B, -1, -1))

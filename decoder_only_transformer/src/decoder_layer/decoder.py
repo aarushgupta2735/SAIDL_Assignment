@@ -19,10 +19,19 @@ Attention = {
     "Mqa": MQAMultiSelfDecoder
 }
 
+ConvArch = {
+    "none": [nn.Identity, nn.Identity],
+    "pre_attn": [nn.Conv1d, nn.Identity],
+    "interleaved" : [nn.Conv1d, nn.Conv1d]
+}
+
 class Decoder(nn.Module):
   #multi-attention -- > add and norm --> feed forward --> add and norm
   def __init__(self, config: TransformerConfig):
     super().__init__()
+    self.C = config.embedding_size
+    self.conv1 = ConvArch[config.conv_type](self.C,self.C,config.conv_pre_attn_ksize)
+    self.conv2 = ConvArch[config.conv_type](self.C,self.C,config.conv_interleaved_k_size)
     self.ma_self = Attention[config.attention](config)
     self.ff = FeedForward(config)
     self.an1 = AddNorm(config)
@@ -30,7 +39,7 @@ class Decoder(nn.Module):
     self.dropout1 = nn.Dropout(p=config.dropout)
     self.dropout2 = nn.Dropout(p=config.dropout)
     
-  def forward(self, x):
-    x = self.an1(x + self.dropout1(self.ma_self(x)))
+  def forward(self, x): #(B,T,C) input
+    x = self.an1(x + self.dropout1(self.conv2(self.ma_self(self.conv1(x)))))
     x = self.an2(x + self.dropout2(self.ff(x)))
     return x

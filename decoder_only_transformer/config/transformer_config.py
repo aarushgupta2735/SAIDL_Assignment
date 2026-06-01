@@ -14,21 +14,35 @@ class TransformerConfig:
     dropout: float = 0.2
 
 
-     # --- Swappable components (drives registries) ---
+    # Swappable components (drives registries) 
     attention: str = "Standard" #Local,Sparse,MQA
     positional_encoding: str = "Sinusoidal" #Rotatory,Relative,Attention  
     use_conv: bool = False
-    conv_type: str = "none"        # "pre_attn", "interleaved", "depthwise", "gated_ffn"
+    conv_type: str = "none"        # "pre_attn", "interleaved" ## Not implemented for now: "depthwise", "gated_ffn"
  
-    # --- Attention variant specific ---
+    #Attention variant specific
     window_size: int = 128           # sliding window attention : w - > since transformer is decoder only we will use w/2 after each token
     block_size: int  = 64            # sparse block attention
     #n_kv_heads: int   = 2             # grouped query attention -> not need explicitly
  
-    # --- Experiment identity ---
+    #Conv Specific
+    conv_pre_attn_k_size: int = 5 #kept odd as per convention and maintained in validation
+    conv_interleaved_k_size: int = 5 
+        #pre_attn_k_size
+        ##stride_interleaved_k_size
+
+    # Experiment identity
     experiment_name: str = "baseline"
     run_name: Optional[str] = None          # auto-generated from config if None
 
+    @property
+    def pad_pre_attn_ksize(self):
+        return (self.conv_pre_attn_k_size-1)/2
+    
+    @property
+    def pad_interleaved_k_size(self):
+        return (self.conv_interleaved_k_size-1)/2
+    
     @property
     def k_relative_pe(self):
         return self.context_window-1 #assumed to be T-1. Can be changed to other t-k
@@ -71,3 +85,6 @@ class TransformerConfig:
             raise ValueError(f'Embedding Size = {self.embedding_size} must be divisible by n_heads = {self.n_heads}')
         if(not(self.use_conv) and self.conv_type!="none"):
             raise ValueError(f'Conv type cannot be a valid value')
+        if(self.conv_interleaved_k_size&1|self.conv_pre_attn_ksize&1):
+            raise ValueError(f'K_size must be odd')
+

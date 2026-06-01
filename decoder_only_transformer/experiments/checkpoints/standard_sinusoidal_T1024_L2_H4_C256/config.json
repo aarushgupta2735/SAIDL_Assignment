@@ -12,7 +12,8 @@
   "conv_type": "none",
   "window_size": 128,
   "block_size": 64,
-  "n_kv_heads": 2,
+  "conv_pre_attn_k_size": 5,
+  "conv_interleaved_k_size": 5,
   "experiment_name": "baseline",
   "run_name": null
 }

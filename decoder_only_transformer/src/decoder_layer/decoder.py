@@ -13,10 +13,10 @@ from src.feedforward import FeedForward
 from src.add_and_norm import AddNorm
 
 Attention = {
-    "Standard": MultiSelfDecoder,
-    "Local": MultiSelfDecoder,
-    "Sparse": MultiSelfDecoder,
-    "Mqa": MQAMultiSelfDecoder
+    "standard": MultiSelfDecoder,
+    "local": MultiSelfDecoder,
+    "sparse": MultiSelfDecoder,
+    "mqa": MQAMultiSelfDecoder
 }
 
 ConvArch = {
@@ -30,8 +30,8 @@ class Decoder(nn.Module):
   def __init__(self, config: TransformerConfig):
     super().__init__()
     self.C = config.embedding_size
-    self.conv1 = ConvArch[config.conv_type](self.C,self.C,config.conv_pre_attn_ksize)
-    self.conv2 = ConvArch[config.conv_type](self.C,self.C,config.conv_interleaved_k_size)
+    self.conv1 = ConvArch[config.conv_type][0](self.C,self.C,config.conv_pre_attn_k_size)
+    self.conv2 = ConvArch[config.conv_type][1](self.C,self.C,config.conv_interleaved_k_size)
     self.ma_self = Attention[config.attention](config)
     self.ff = FeedForward(config)
     self.an1 = AddNorm(config)

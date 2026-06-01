@@ -15,8 +15,8 @@ class TransformerConfig:
 
 
     # Swappable components (drives registries) 
-    attention: str = "Standard" #Local,Sparse,MQA
-    positional_encoding: str = "Sinusoidal" #Rotatory,Relative,Attention  
+    attention: str = "standard" #local,sparse,mqa
+    positional_encoding: str = "sinusoidal" #rotatory,relative,attention  
     use_conv: bool = False
     conv_type: str = "none"        # "pre_attn", "interleaved" ## Not implemented for now: "depthwise", "gated_ffn"
  
@@ -85,6 +85,6 @@ class TransformerConfig:
             raise ValueError(f'Embedding Size = {self.embedding_size} must be divisible by n_heads = {self.n_heads}')
         if(not(self.use_conv) and self.conv_type!="none"):
             raise ValueError(f'Conv type cannot be a valid value')
-        if(self.conv_interleaved_k_size&1|self.conv_pre_attn_ksize&1):
+        if(not(self.conv_interleaved_k_size&1|self.conv_pre_attn_k_size&1)):
             raise ValueError(f'K_size must be odd')
 

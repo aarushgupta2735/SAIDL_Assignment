@@ -6,16 +6,16 @@ import math
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 
-from data_prep.positional_embedding.attention_positional_embedding import AttentionPositionalEmbedding
-from data_prep.positional_embedding.relative_positional_embedding import RelativePositionalEmbedding
-from data_prep.positional_embedding.rotatory_positional_embedding import RotatoryPositionalEmbedding
-from data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
+from src.data_prep.positional_embedding.attention_positional_embedding import AttentionPositionalEmbedding
+from src.data_prep.positional_embedding.relative_positional_embedding import RelativePositionalEmbedding
+from src.data_prep.positional_embedding.rotatory_positional_embedding import RotatoryPositionalEmbedding
+from src.data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
 
 PE ={
-  "Standard": StandardPositionalEmbedding,
-  "Rotatory": RotatoryPositionalEmbedding,
-  "Relative": RelativePositionalEmbedding,
-  "Attention": AttentionPositionalEmbedding
+  "sinusoidal": StandardPositionalEmbedding,
+  "rotatory": RotatoryPositionalEmbedding,
+  "relative": RelativePositionalEmbedding,
+  "attention": AttentionPositionalEmbedding
 }
 
 class StandardSingleSelfDecoder(nn.Module):

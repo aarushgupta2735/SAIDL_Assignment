@@ -13,10 +13,10 @@ from .single_decoder.mqa_single_self_decoder import MQASingleSelfDecoder
 #Might need to change
 
 Attention = {
-    "Standard": StandardSingleSelfDecoder,
-    "Local": LocalSingleSelfDecoder,
-    "Sparse": BlockSparseSingleSelfDecoder,
-    "Mqa": MQASingleSelfDecoder
+    "standard": StandardSingleSelfDecoder,
+    "local": LocalSingleSelfDecoder,
+    "sparse": BlockSparseSingleSelfDecoder,
+    "mqa": MQASingleSelfDecoder
 }
 
 

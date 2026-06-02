@@ -45,7 +45,7 @@ class LocalSingleSelfDecoder(nn.Module):
     K = self.WK(xt)
     V = self.WV(xt)
     w = self.w
-    T = self.T
+    _,T,_ = xt.shape 
     d_k = self.d_k
 
     if(self.pe=="rotatory"):

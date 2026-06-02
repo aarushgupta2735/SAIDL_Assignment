@@ -40,6 +40,7 @@ class StandardSingleSelfDecoder(nn.Module):
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k)
     K = self.WK(xt)
     V = self.WV(xt)
+    _,T,_= xt.shape
 
     if(self.pe=="rotatory"):
       Q = self.pe_model(Q)
@@ -57,8 +58,8 @@ class StandardSingleSelfDecoder(nn.Module):
     h = h/self.d_k**0.5
 
     # Ensure mask inherits the GPU device from the h tensor
-    
-    h = h.masked_fill(self.mask, float('-inf'))
+    self.mask = self.mask.to(h.device)
+    h = h.masked_fill(self.mask[:T,:T], float('-inf'))
 
     a = F.softmax(h,dim=-1)@V
     #dropout

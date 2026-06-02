@@ -1,0 +1,14 @@
+{
+  "os": "Windows-10-10.0.26200-SP0",
+  "python": "CPython 3.11.15",
+  "startedAt": "2026-06-02T06:32:57.191369Z",
+  "program": "-m train.train",
+  "git": {
+    "remote": "https://github.com/aarushgupta2735/SAIDL_Assignment",
+    "commit": "0e3d894cce49e1a69e16da2dc58be4bd87248adb"
+  },
+  "root": "C:\\Users\\admin\\Documents\\SAIDL_Assignment\\decoder_only_transformer",
+  "host": "DESKTOP-AO89QNU",
+  "executable": "C:\\Users\\admin\\miniconda3\\envs\\rl-cuda-env\\python.exe",
+  "writerId": "sx5z4wqlf39048xa9fw2pmaw3smu0acz"
+}

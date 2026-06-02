@@ -45,11 +45,6 @@ train_config = TrainConfig()
 # --- Model ---
 model = Transformer(config).to(device)
 
-if platform.system() != "Windows":
-    model = torch.compile(model)
-else:
-    print("Skipping torch.compile (not supported on Windows without Triton)")
-
 total_params = sum(p.numel() for p in model.parameters())
 print(f"Model parameters: {total_params:,}")
 

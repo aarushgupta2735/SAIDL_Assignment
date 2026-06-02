@@ -35,6 +35,7 @@ class MQASingleSelfDecoder(nn.Module):
     self.register_buffer('mask',mask) 
 
   def forward(self,xt,K,V):
+    (B,T,_)= xt.shape
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k)
 
     if(self.pe=="rotatory"):
@@ -47,12 +48,12 @@ class MQASingleSelfDecoder(nn.Module):
       h = torch.unsqueeze(h,0)
       h=self.pe_model(h,self.head_n)
       h=torch.squeeze(h,0)
-    elif(self.pe=="Rrelative"):
+    elif(self.pe=="relative"):
       h+=self.pe_model(Q)
 
     h = h/self.d_k**0.5 #h: (B,T,d_k)@(B,d_k,T) -> (B,T,T)
 
-    h = h.masked_fill(self.mask, float('-inf'))
+    h = h.masked_fill(self.mask[:T,:T], float('-inf'))
 
     a = F.softmax(h,dim=-1)@V
     #dropout

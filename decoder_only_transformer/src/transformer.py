@@ -37,5 +37,5 @@ class Transformer(nn.Module):
         xt_pe = self.data_prep(seq[:,-self.T:]) # (1,T) to (1,T,C) 
         decoder_output = self.decoder_block(xt_pe) #(1,T,C)
         logits = self.lin(decoder_output) #(1,T,V)
-        req_token_index = torch.argmax(logits[:,-1,:],dim=-1)
+        req_token_index = torch.argmax(logits[:,-1,:],dim=-1).unsqueeze(0)
         return req_token_index

@@ -45,7 +45,7 @@ class BlockSparseSingleSelfDecoder(nn.Module):
     K = self.WK(xt)
     V = self.WV(xt)
 
-    if(self.pe=="Rotatory"):
+    if(self.pe=="rotatory"):
       Q = self.pe_model(Q)
       K = self.pe_model(K)
 
@@ -60,9 +60,9 @@ class BlockSparseSingleSelfDecoder(nn.Module):
 
     chunk_curr = torch.stack([Q_chunks[i]@K_chunks[i].transpose(-2,-1) for i in range(len(Q_chunks))])
 
-    if(self.pe=="Attention"):
+    if(self.pe=="attention"):
       chunk_curr=self.pe_model(chunk_curr,self.head_n)
-    if(self.pe=="Relative"):
+    if(self.pe=="relative"):
       chunk_curr=self.pe_model(Q)
 
     chunk_curr = chunk_curr.masked_fill(self.mask, float('-inf'))

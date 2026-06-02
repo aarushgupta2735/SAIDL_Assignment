@@ -41,17 +41,17 @@ class StandardSingleSelfDecoder(nn.Module):
     K = self.WK(xt)
     V = self.WV(xt)
 
-    if(self.pe=="Rotatory"):
+    if(self.pe=="rotatory"):
       Q = self.pe_model(Q)
       K = self.pe_model(K)
     
     h = (Q@K.transpose(-2,-1)) #h: (B,T,d_k)@(B,d_k,T) -> (B,T,T)
 
-    if(self.pe=="Attention"):
+    if(self.pe=="attention"):
       h = torch.unsqueeze(h,0)
       h=self.pe_model(h,self.head_n)
       h=torch.squeeze(h,0)
-    if(self.pe=="Relative"):
+    if(self.pe=="relative"):
       h+=self.pe_model(Q)
     
     h = h/self.d_k**0.5

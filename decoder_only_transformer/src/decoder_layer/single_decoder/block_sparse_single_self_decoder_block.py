@@ -12,7 +12,7 @@ from src.data_prep.positional_embedding.rotatory_positional_embedding import Rot
 from src.data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
 
 PE ={
-  "standard": StandardPositionalEmbedding,
+  "sinusoidal": StandardPositionalEmbedding,
   "rotatory": RotatoryPositionalEmbedding,
   "relative": RelativePositionalEmbedding,
   "attention": AttentionPositionalEmbedding
@@ -50,8 +50,7 @@ class BlockSparseSingleSelfDecoder(nn.Module):
       K = self.pe_model(K)
 
     w = self.w
-    T = self.T
-    d_k = self.d_k
+    _,T,_ = Q.shape
 
     Q_chunks = [Q[:,j:j+w,:].float() for j in range(0,T,w)] #Q_chunk[0] : (B,w,d_k)
     K_chunks = [K[:,j:j+w,:].float() for j in range(0,T,w)]  #K_chunks.T(-2,-1) : (B,d_k,w) 
@@ -67,9 +66,9 @@ class BlockSparseSingleSelfDecoder(nn.Module):
 
     chunk_curr = chunk_curr.masked_fill(self.mask, float('-inf'))
     chunk_curr = F.softmax(chunk_curr,dim=-1,dtype = torch.float)
-    chunk_curr = torch.stack([chunk_curr[i]@V_chunks[i] for i in range(len(chunk_curr))])
+    chunk_curr = [chunk_curr[i]@V_chunks[i] for i in range(len(chunk_curr))]
     
-    res = torch.cat(chunk_curr,dim=1).nan_to_num(0) 
+    res = torch.cat(tuple(chunk_curr),dim=1).nan_to_num(0) 
 
     #dropout
     return self.dropModel(res)

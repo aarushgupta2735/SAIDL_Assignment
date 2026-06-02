@@ -12,7 +12,7 @@ from src.data_prep.positional_embedding.rotatory_positional_embedding import Rot
 from src.data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
 
 PE ={
-  "standard": StandardPositionalEmbedding,
+  "sinusoidal": StandardPositionalEmbedding,
   "rotatory": RotatoryPositionalEmbedding,
   "relative": RelativePositionalEmbedding,
   "attention": AttentionPositionalEmbedding
@@ -35,7 +35,7 @@ class MQASingleSelfDecoder(nn.Module):
     self.register_buffer('mask',mask) 
 
   def forward(self,xt,K,V):
-    (B,T,_)= xt.shape
+    (_,T,_)= xt.shape
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k)
 
     if(self.pe=="rotatory"):

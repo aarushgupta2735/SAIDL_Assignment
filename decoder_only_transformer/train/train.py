@@ -37,8 +37,8 @@ print(f"Train tokens: {len(train_tokens):,}  |  Val tokens: {len(val_tokens):,}"
 config = TransformerConfig(
     vocab_size        = tokenizer.n_vocab,
     experiment_name   = "baseline",      # change per experiment group
-    attention         = "standard",
-    positional_encoding = "sinusoidal",
+    attention         = "mqa", ##standard,local,sparse,mqa
+    positional_encoding = "sinusoidal", #sinusoidal,rotatory,relative,attention  
 )
 train_config = TrainConfig()
 

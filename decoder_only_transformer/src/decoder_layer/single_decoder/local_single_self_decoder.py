@@ -12,7 +12,7 @@ from src.data_prep.positional_embedding.rotatory_positional_embedding import Rot
 from src.data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
 
 PE ={
-  "standard": StandardPositionalEmbedding,
+  "sinusoidal": StandardPositionalEmbedding,
   "rotatory": RotatoryPositionalEmbedding,
   "relative": RelativePositionalEmbedding,
   "attention": AttentionPositionalEmbedding

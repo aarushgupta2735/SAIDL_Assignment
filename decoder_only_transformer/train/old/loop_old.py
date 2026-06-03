@@ -1,16 +1,11 @@
 import torch
 import time
-from evaluate.logger import ExperimentLogger
-from evaluate.validate import evaluate
+from decoder_only_transformer.evaluate.old.logger_old import ExperimentLogger
+from decoder_only_transformer.evaluate.old.validate_old import evaluate
 
 
-# CHANGE: device parameter added so autocast uses correct device_type (cpu or cuda)
-def loop(model, optimiser, train_tokens, val_tokens, config, train_config, logger: ExperimentLogger, device: torch.device):
+def loop(model, optimiser, train_tokens, val_tokens, config, train_config, logger: ExperimentLogger):
     best_val_loss = float("inf")
-    device_type = device.type  # "cuda" or "cpu"
-
-    # CHANGE: track training time per 1000 steps for report table
-    epoch_start = time.perf_counter()
 
     for i in range(1, train_config.iterations + 1):
 
@@ -27,7 +22,7 @@ def loop(model, optimiser, train_tokens, val_tokens, config, train_config, logge
         logger.on_iter_start()
 
         optimiser.zero_grad()
-        with torch.autocast(device_type=device_type, dtype=torch.bfloat16):
+        with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
             logits, loss = model(x, y)
 
         loss.backward()
@@ -42,24 +37,16 @@ def loop(model, optimiser, train_tokens, val_tokens, config, train_config, logge
             grad_norm=grad_norm,
         )
 
-        # CHANGE: log time per 1000 steps so report table has "training time per epoch"
-        if i % 1000 == 0:
-            if device_type == "cuda":
-                torch.cuda.synchronize()
-            elapsed = time.perf_counter() - epoch_start
-            logger.log_epoch_time(i, elapsed)
-            epoch_start = time.perf_counter()  # reset for next 1000-step window
-
-        # --- Validation + checkpointing every val_interval steps ---
+        # --- Validation + checkpointing every 500 steps ---
         if i % train_config.val_interval == 0:
-            val_loss = evaluate(model, val_tokens, config, device)
+            val_loss = evaluate(model, val_tokens, config)
             logger.log_validation(i, val_loss)
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
                 logger.save_best(model, val_loss)
 
-            logger.save_last(model, i, val_loss)
+            logger.save_checkpoint(model, i, val_loss)
 
 
 def update_lr(i, optimiser, config, train_config):

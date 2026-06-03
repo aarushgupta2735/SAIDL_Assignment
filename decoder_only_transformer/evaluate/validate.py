@@ -4,31 +4,39 @@ Kept separate from training so it can be called with any model/dataset.
 """
 
 import torch
-import torch.nn.functional as F
+
 
 @torch.no_grad()
-def evaluate(model, val_tokens, config, num_batches: int = 50) -> float:
+# CHANGE: device parameter added so autocast uses correct device_type
+def evaluate(model, val_tokens, config, device: torch.device) -> float:
     """
-    Runs `num_batches` random batches over val_tokens.
-    Returns mean cross-entropy loss (used to compute perplexity = exp(loss)).
+    Iterates sequentially through val_tokens in non-overlapping batches.
+    Returns mean cross-entropy loss (perplexity = exp(loss)).
+
+    CHANGE: replaced random batch sampling with sequential iteration so
+    validation loss is deterministic and fairly comparable across runs.
     """
     model.eval()
+    device_type = device.type
     total_loss = 0.0
+    n_batches = 0
 
-    for _ in range(num_batches):
-        ix = torch.randint(
-            len(val_tokens) - config.context_window,
-            (config.batch_size,),
-            device=val_tokens.device,
-        )
-        x = torch.stack([val_tokens[j : j + config.context_window] for j in ix])
-        y = torch.stack([val_tokens[j + 1 : j + 1 + config.context_window] for j in ix])
+    # Sequential pass: step through val_tokens without overlap
+    step = config.batch_size * config.context_window
+    for start in range(0, len(val_tokens) - config.context_window * config.batch_size, step):
+        indices = [start + b * config.context_window for b in range(config.batch_size)]
+        # Guard: skip if any index goes out of bounds
+        if indices[-1] + config.context_window + 1 > len(val_tokens):
+            break
 
-        device_type = next(model.parameters()).device.type
+        x = torch.stack([val_tokens[j : j + config.context_window] for j in indices])
+        y = torch.stack([val_tokens[j + 1 : j + 1 + config.context_window] for j in indices])
+
         with torch.autocast(device_type=device_type, dtype=torch.bfloat16):
             _, loss = model(x, y)
 
         total_loss += loss.item()
+        n_batches += 1
 
     model.train()
-    return total_loss / num_batches
+    return total_loss / n_batches if n_batches > 0 else float("inf")

@@ -6,5 +6,7 @@
         "other": true,
         "comments": false,
         "strings": true
-    }
+    },
+    "editor.wordBasedSuggestions": "allDocuments",
+    "emmet.useInlineCompletions": true
 }

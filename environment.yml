@@ -1,12 +1,3 @@
-name: saidl
-channels:
-  - defaults
-  - conda-forge
-dependencies:
-  - python=3.10
-  - pip
-  - jupyterlab
-  - pip:
-    - torch
-    - tiktoken
-    - wandb
+!pip install gymnasium
+!pip install mujoco
+!pip install imageio

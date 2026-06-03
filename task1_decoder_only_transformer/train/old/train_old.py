@@ -9,7 +9,7 @@ from src.transformer import Transformer
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
 from .loop_old import loop
-from decoder_only_transformer.evaluate.old.logger_old import ExperimentLogger
+from task1_decoder_only_transformer.evaluate.old.logger_old import ExperimentLogger
 
 # --- Device ---
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

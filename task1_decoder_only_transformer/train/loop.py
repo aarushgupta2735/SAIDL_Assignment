@@ -1,7 +1,7 @@
 import torch
 import time
-from decoder_only_transformer.evaluate.old.logger_old import ExperimentLogger
-from decoder_only_transformer.evaluate.old.validate_old import evaluate
+from task1_decoder_only_transformer.evaluate.old.logger_old import ExperimentLogger
+from task1_decoder_only_transformer.evaluate.old.validate_old import evaluate
 
 
 # CHANGE: device parameter added so autocast uses correct device_type (cpu or cuda)

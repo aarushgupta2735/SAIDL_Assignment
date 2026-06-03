@@ -1,7 +1,7 @@
 import torch
 import time
-from decoder_only_transformer.evaluate.old.logger_old import ExperimentLogger
-from decoder_only_transformer.evaluate.old.validate_old import evaluate
+from task1_decoder_only_transformer.evaluate.old.logger_old import ExperimentLogger
+from task1_decoder_only_transformer.evaluate.old.validate_old import evaluate
 
 
 def loop(model, optimiser, train_tokens, val_tokens, config, train_config, logger: ExperimentLogger):

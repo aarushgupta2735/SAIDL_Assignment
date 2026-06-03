@@ -27,7 +27,7 @@ class ExperimentLogger:
         self.checkpoint_dir = os.path.join("experiments", "checkpoints", self.run_id)
         os.makedirs(self.checkpoint_dir, exist_ok=True)
 
-        # --- Save config locally so every run is reproducible ---
+        # --- Save config locally so test.py can reconstruct the model ---
         with open(os.path.join(self.checkpoint_dir, "config.json"), "w") as f:
             json.dump(config.to_dict(), f, indent=2)
 
@@ -103,20 +103,6 @@ class ExperimentLogger:
         wandb.log(metrics, step=i)
 
     # ------------------------------------------------------------------
-    # Test set evaluation — called once after training on best checkpoint
-    # CHANGE: new method, logs to wandb as summary metrics so they appear
-    # as single final numbers in the run summary, not as a time series
-    # ------------------------------------------------------------------
-
-    def log_test(self, test_loss: float):
-        test_ppl = math.exp(min(test_loss, 20))
-        # Use wandb.summary so these appear as scalar cells in the runs table
-        # rather than as a curve — test is a one-shot final number
-        wandb.run.summary["test/loss"]       = test_loss
-        wandb.run.summary["test/perplexity"] = test_ppl
-        print(f"Test loss: {test_loss:.4f}  |  Test PPL: {test_ppl:.2f}")
-
-    # ------------------------------------------------------------------
     # Inference latency
     # ------------------------------------------------------------------
 
@@ -125,7 +111,9 @@ class ExperimentLogger:
         model.eval()
         prompt_len, gen_len, repeats = 64, 128, 20
 
-        dummy_input = torch.randint(0, self.config.vocab_size, (1, prompt_len), device=self.device)
+        dummy_input = torch.randint(
+            0, self.config.vocab_size, (1, prompt_len), device=self.device
+        )
 
         # Warmup
         for _ in range(3):
@@ -163,23 +151,27 @@ class ExperimentLogger:
 
     # ------------------------------------------------------------------
     # Checkpointing
+    # CHANGE: wandb_run_id now saved in every checkpoint so test.py can
+    # resume the correct wandb run and log test metrics to it
     # ------------------------------------------------------------------
 
     def save_last(self, model: torch.nn.Module, i: int, val_loss: float):
         path = os.path.join(self.checkpoint_dir, "last.pt")
         torch.save({
-            "step":     i,
-            "val_loss": val_loss,
-            "model":    model.state_dict(),
-            "run_id":   self.run_id,
+            "step":         i,
+            "val_loss":     val_loss,
+            "model":        model.state_dict(),
+            "run_id":       self.run_id,
+            "wandb_run_id": self.run.id,      # CHANGE
         }, path)
 
     def save_best(self, model: torch.nn.Module, val_loss: float):
         path = os.path.join(self.checkpoint_dir, "best.pt")
         torch.save({
-            "val_loss": val_loss,
-            "model":    model.state_dict(),
-            "run_id":   self.run_id,
+            "val_loss":     val_loss,
+            "model":        model.state_dict(),
+            "run_id":       self.run_id,
+            "wandb_run_id": self.run.id,      # CHANGE
         }, path)
 
     def finish(self):

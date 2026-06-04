@@ -19,11 +19,11 @@ class ReplayBuffer():
 
     def add(self,state, action, reward, next_state, done):
         if(self.curr_D_size<self.D_size):
-            self.states[self.curr_D_size] = state
-            self.actions[self.curr_D_size] = action
-            self.rewards[self.curr_D_size] = reward
-            self.next_states[self.curr_D_size] = next_state
-            self.dones[self.curr_D_size] = done
+            self.states = torch.cat([self.states, state], dim=0)
+            self.actions = torch.cat([self.actions, action], dim=0)
+            self.rewards = torch.cat([self.rewards, reward], dim=0)
+            self.next_states = torch.cat([self.next_states, next_state], dim=0)
+            self.dones = torch.cat([self.dones, done], dim=0)
         else:
             self.states[self.curr_D_size % self.D_size] = state
             self.actions[self.curr_D_size % self.D_size] = action

@@ -74,7 +74,8 @@ class TD3(nn.Module):
         #compute losses and objective funtion for policy
         self.phi1_optimiser.zero_grad()
         self.phi2_optimiser.zero_grad()
-        target = R + self.gamma*(1-d)*torch.min(self.phi1_target(S_,A_),self.phi2_target(S_,A_)).detach()    
+        with torch.no_grad():
+            target = R + self.gamma*(1-d)*torch.min(self.phi1_target(S_,A_),self.phi2_target(S_,A_))
         loss1=((self.phi1(S,A,)-target)**2).mean()
         loss2=((self.phi2(S,A)-target)**2).mean()
 

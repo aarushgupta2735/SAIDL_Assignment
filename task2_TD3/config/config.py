@@ -6,7 +6,7 @@ class TD3config():
     ##env feartures: hardcoded for HopperV5
     obs_features: int = 11
     act_features: int = 3
-    a_low: int = 1
+    a_low: int = -1
     a_high: int = 1
 
     #switch

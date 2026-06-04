@@ -5,7 +5,7 @@
   "batch_size": 32,
   "embedding_size": 256,
   "n_heads": 4,
-  "dropout": 0.2,
+  "dropout": 0.3,
   "attention": "standard",
   "positional_encoding": "sinusoidal",
   "use_conv": false,

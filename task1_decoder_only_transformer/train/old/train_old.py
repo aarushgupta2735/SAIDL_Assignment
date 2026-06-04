@@ -8,7 +8,7 @@ import platform
 from src.transformer import Transformer
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
-from .loop_old import loop
+from . import loop
 from task1_decoder_only_transformer.evaluate.old.logger_old import ExperimentLogger
 
 # --- Device ---

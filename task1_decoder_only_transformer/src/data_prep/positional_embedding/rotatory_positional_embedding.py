@@ -15,10 +15,10 @@ class RotatoryPositionalEmbedding(nn.Module):
         self.d_k = config.d_k
         
         # Create positional encoding ONCE in init, then register as buffer so it moves to GPU automatically
-        theta = torch.tensor([pow(10000,(-2*t)/self.d_k) for t in range(self.d_k//2)])
-        m = torch.arange(self.T).unsqueeze(1)
-        m_theta = theta*m
-        cos_theta = torch.cos(m_theta).repeat_interleave(2,dim=-1)
+        theta = torch.tensor([pow(10000,(-2*t)/self.d_k) for t in range(self.d_k//2)]) #(d_k//2)
+        m = torch.arange(self.T).unsqueeze(1) #(T,1)
+        m_theta = theta*m #(T,d_k//2)
+        cos_theta = torch.cos(m_theta).repeat_interleave(2,dim=-1)  #(T,d_k) by repeating each value twice for interleaving
         sin_theta = torch.sin(m_theta).repeat_interleave(2,dim=-1)
 
         self.register_buffer('cos_theta', cos_theta)
@@ -26,12 +26,13 @@ class RotatoryPositionalEmbedding(nn.Module):
 
     
     def forward(self,x): #input is (B,T,d_k) to give (B,T,d_k)
+        #check if this is correct on interference
         B,T,d_k = x.shape
         x = torch.reshape(x,(B,T,d_k//2,2))
         x1 = x[:,:,:,0]
         x2  = x[:,:,:,1]
         x = x.reshape(B,T,d_k)
         res_x = torch.stack((-x2,x1),dim=-1).reshape(B,T,d_k)
-        # data is (B, T, C), self.pe is (T, C). 
-        return res_x*self.sin_theta + x*self.cos_theta
+
+        return res_x*self.sin_theta[:T,:] + x*self.cos_theta[:T,:]
     

@@ -39,7 +39,7 @@ class BlockSparseSingleSelfDecoder(nn.Module):
     mask = torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
     self.register_buffer('mask',mask) 
 
-  def forward(self,xt):
+  def forward(self,xt): 
     
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k) g
     K = self.WK(xt)
@@ -50,25 +50,31 @@ class BlockSparseSingleSelfDecoder(nn.Module):
       K = self.pe_model(K)
 
     w = self.w
-    _,T,_ = Q.shape
+    B,T,d_k = Q.shape
 
-    Q_chunks = [Q[:,j:j+w,:].float() for j in range(0,T,w)] #Q_chunk[0] : (B,w,d_k)
-    K_chunks = [K[:,j:j+w,:].float() for j in range(0,T,w)]  #K_chunks.T(-2,-1) : (B,d_k,w) 
-    # @ = ( B,w,d_k) @ (B,d_k,w) -> (B,w,w) @(B,w,d_k) -> (B,w,d_k)
-    V_chunks = [V[:,j:j+w,:].float() for j in range(0,T,w)]
+    z = T//w
+    Q_chunks = Q.reshape(B,z,w,d_k) 
+    K_chunks = K.reshape(B,z,w,d_k) 
+    V_chunks = V.reshape(B,z,w,d_k)
 
-    chunk_curr = torch.stack([Q_chunks[i]@K_chunks[i].transpose(-2,-1) for i in range(len(Q_chunks))])
+    chunk_curr = Q_chunks@K_chunks.transpose(-2,-1) #(B,z,w,d_k)@(B,z,d_k,w) -> (B,z,w,w)
 
     if(self.pe=="attention"):
+      chunk_curr.reshape(B,T,w)
       chunk_curr=self.pe_model(chunk_curr,self.head_n)
+      chunk_curr.reshape(B,z,w,w)
     if(self.pe=="relative"):
+      chunk_curr.reshape(B,T,w)
       chunk_curr=self.pe_model(Q)
+      chunk_curr.reshape(B,z,w,w)
 
     chunk_curr = chunk_curr.masked_fill(self.mask, float('-inf'))
-    chunk_curr = F.softmax(chunk_curr,dim=-1,dtype = torch.float)
-    chunk_curr = [chunk_curr[i]@V_chunks[i] for i in range(len(chunk_curr))]
+    chunk_curr = F.softmax(chunk_curr.float(),dim=-1).to(Q.dtype)
+
+    chunk_curr = chunk_curr@V_chunks #(B,z,w,w) @ (B,z,w,d_k) -> (B,z,w,d_k)
     
-    res = torch.cat(tuple(chunk_curr),dim=1).nan_to_num(0) 
+    res = torch.reshape(chunk_curr,(B,T,d_k))
 
     #dropout
     return self.dropModel(res)
+  

@@ -27,7 +27,7 @@ class TD3config():
     training_iterations:int = 100000
     n_envs:int = 3
     BASE_SEED:int = 42
-
+    eval_iterations: int = 5000
 
 
 @dataclass

@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from TD3.config.config import TD3config
+from config.config import TD3config
 
 class ReplayBuffer():
     def __init__(self,config:TD3config,device):

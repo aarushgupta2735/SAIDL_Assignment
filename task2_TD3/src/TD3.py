@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import copy
 
-from TD3.config.config import TD3config
+from config.config import TD3config
 from .Actor import Actor
 from .Critic import Critic
 from .ReplayBuffer import ReplayBuffer
@@ -84,10 +84,11 @@ class TD3(nn.Module):
         self.phi1_optimiser.step()
         self.phi2_optimiser.step()
 
+        self.actor_optimiser.zero_grad()
+        loss=(-self.phi1(torch.cat([S,self.theta(S)],dim=1))).mean()
         #at every policy_delay steps, update the policy and target networks
         if(curr_iter%self.policy_delay==0):
-            self.actor_optimiser.zero_grad()
-            loss=(-self.phi1(torch.cat([S,self.theta(S)],dim=1))).mean()
+            
             loss.backward()
             self.actor_optimiser.step()
             #update target networks
@@ -100,3 +101,5 @@ class TD3(nn.Module):
 
                 for param, target_param in zip(self.theta.parameters(), self.theta_target.parameters()):
                     target_param.data.copy_(self.polyak_coeff * param.data + (1 - self.polyak_coeff) * target_param.data)
+
+        return loss1,loss2,loss

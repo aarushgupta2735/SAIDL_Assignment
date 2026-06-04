@@ -63,7 +63,7 @@ class LocalSingleSelfDecoder(nn.Module):
     if(self.pe=="relative"):
       chunk_curr=self.pe_model(Q)
 
-    chunk_curr = chunk_curr.masked_fill(self.mask_curr, float('-inf'))
+    chunk_curr = chunk_curr.masked_fill(self.mask_curr, float('-inf')) #TODO : Fix for inference
     chunk_curr = F.softmax(chunk_curr,dim=-1,dtype = torch.float)
     chunk_curr = torch.stack([chunk_curr[i]@V_chunks[i] for i in range(len(chunk_curr))])
 

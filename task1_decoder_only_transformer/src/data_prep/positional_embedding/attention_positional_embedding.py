@@ -17,8 +17,8 @@ class AttentionPositionalEmbedding(nn.Module):
         self.dropModel = nn.Dropout(p=config.dropout)
         self.q_pos = torch.arange(self.T).view(self.T,1)
         self.k_pos = torch.arange(self.T).view(1,self.T)
-        self.slopes = torch.tensor([pow(2,-8/config.n_heads)**i for i in range(1,config.n_heads+1)],dtype=float)
-        self.model = self.k_pos-self.q_pos
+        self.register_buffer('slopes',torch.tensor([pow(2,-8/config.n_heads)**i for i in range(1,config.n_heads+1)],dtype=torch.float32))
+        self.register_buffer('model',self.k_pos-self.q_pos,dtype=torch.float32)
     
     def forward(self,x,head_n): #returns the linear bias matrix based on nth head to Q.K(T) (taken as x)
         (_,B,w,w) = x.shape

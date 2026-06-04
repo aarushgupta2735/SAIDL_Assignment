@@ -59,8 +59,8 @@ class StandardSingleSelfDecoder(nn.Module):
 
     # Ensure mask inherits the GPU device from the h tensor
     self.mask = self.mask.to(h.device)
-    h = h.masked_fill(self.mask[:T,:T], float('-inf'))
+    h = h.masked_fill(self.mask[:h.shape[-2], :h.shape[-1]], float('-inf'))
 
-    a = F.softmax(h,dim=-1)@V
+    a = F.softmax(h,dim=-1).to(Q.dtype)@V
     #dropout
     return self.dropModel(a)

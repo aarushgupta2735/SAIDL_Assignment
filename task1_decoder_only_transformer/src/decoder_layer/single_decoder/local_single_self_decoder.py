@@ -38,20 +38,18 @@ class LocalSingleSelfDecoder(nn.Module):
     mask_curr = torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
     mask_prev= torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
     self.register_buffer('mask_curr',mask_curr) 
-    self.register_buffer('mask_prev',mask_prev) 
 
   def forward(self,xt):
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k) g
     K = self.WK(xt)
     V = self.WV(xt)
+    
     w = self.w
-    _,T,_ = xt.shape 
-    d_k = self.d_k
+    B,T,d_k = Q.shape
 
     if(self.pe=="rotatory"):
       Q = self.pe_model(Q)
       K = self.pe_model(K)
-
 
     Q_chunks = [Q[:,j:j+w,:] for j in range(0,T,w)] #Q_chunk[0] : (B,w,d_k)
     K_chunks = [K[:,j:j+w,:] for j in range(0,T,w)]  #K_chunks.T(-2,-1) : (B,d_k,w) 
@@ -76,7 +74,6 @@ class LocalSingleSelfDecoder(nn.Module):
     if(self.pe=="relative"):
       chunk_prev=self.pe_model(Q)
 
-    chunk_prev = chunk_prev.masked_fill(self.mask_prev, float('-inf'))
     chunk_prev = F.softmax(chunk_prev,dim=-1,dtype = torch.float)
     chunk_prev = torch.stack([chunk_prev[i-1]@V_chunks[i] for i in range(1,len(V_chunks))])
     

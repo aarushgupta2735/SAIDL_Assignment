@@ -41,8 +41,8 @@ print(f"Train tokens: {len(train_tokens):,}  |  Val tokens: {len(val_tokens):,}"
 # NOTE: change experiment_name, attention, positional_encoding per run
 config = TransformerConfig(
     vocab_size          = tokenizer.n_vocab,
-    attention           = "standard", #local,sparse,mqa
-    positional_encoding = "sinusoidal", #rotatory,relative,attention 
+    attention           = "standard", #local,sparse,mqa,standard
+    positional_encoding = "relative", #rotatory,relative,attention,sinusoidal
 )
 train_config = TrainConfig()
 

@@ -11,7 +11,7 @@ class TransformerConfig:
     batch_size: int = 32 #B
     embedding_size: int = 64 #d_model C #64
     n_heads: int = 4 #8
-    dropout: float = 0.1 #INCREASE IF OVERFITTING CONTINUES
+    dropout: float = 0.3 #INCREASE IF OVERFITTING CONTINUES
 
 
     # Swappable components (drives registries) 

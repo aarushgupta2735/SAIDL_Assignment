@@ -27,4 +27,4 @@ class RelativePositionalEmbedding(nn.Module):
     def forward(self,Q): #Q is (B,T,d_k) and R is (T,T,d_k) --> @ : (B,T,T)
         _,T,_ = Q.shape
         R = self.embed(self.relative)
-        return torch.einsum("bid,ijd->bij",Q.float(),R[:T,:T,:].float()) 
+        return torch.einsum("bid,ijd->bij",Q,R[:T,:T,:]) 

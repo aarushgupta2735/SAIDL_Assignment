@@ -22,7 +22,8 @@ def evaluate(model, val_tokens, config, device: torch.device) -> float:
     n_batches = 0
 
     # Sequential pass: step through val_tokens without overlap
-    step = config.batch_size * config.context_window
+    B = config.batch_size
+    step = B * config.context_window
     for start in range(0, len(val_tokens) - config.context_window * config.batch_size, step):
         indices = [start + b * config.context_window for b in range(config.batch_size)]
         # Guard: skip if any index goes out of bounds

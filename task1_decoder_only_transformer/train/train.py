@@ -42,7 +42,7 @@ print(f"Train tokens: {len(train_tokens):,}  |  Val tokens: {len(val_tokens):,}"
 config = TransformerConfig(
     vocab_size          = tokenizer.n_vocab,
     attention           = "standard", #local,sparse,mqa
-    positional_encoding = "rotatory", #rotatory,relative,attention 
+    positional_encoding = "sinusoidal", #rotatory,relative,attention 
 )
 train_config = TrainConfig()
 

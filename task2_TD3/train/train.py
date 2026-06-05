@@ -23,6 +23,8 @@ def main():
         training_iterations=1_000_000,
         n_envs=3,
         BASE_SEED=42,
+        use_transformer=False
+        
     )
 
     tConfig = TransformerConfig(
@@ -57,13 +59,10 @@ def main():
 
     episode_rewards = np.zeros(num_envs)
 
-    # ── Training loop ─────────────────────────────────────────────────────────
+    # ── Training loop ────────────────a─────────────────────────────────────────
     for step in range(config.training_iterations):
-        #Random action if size of buffer (step-1) is less than context window :WARMUP PHASE, CAN BE CHANGED WITH BATCH_SIZE OR COMPLETELY OMITTED
-        if(step-1<tConfig.context_window): 
-            actions = envs.action_space.sample()
-        else:
-            actions = agent.select_action(observations, explore=True)
+        #Random action befo
+        actions = agent.select_action(observations, explore=True)
 
         next_obs_np, rewards, terminations, truncations, infos = envs.step(actions)
         dones = terminations | truncations

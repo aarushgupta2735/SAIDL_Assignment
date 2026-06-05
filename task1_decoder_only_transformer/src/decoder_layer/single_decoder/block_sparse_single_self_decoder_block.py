@@ -61,16 +61,16 @@ class BlockSparseSingleSelfDecoder(nn.Module):
     chunk_curr = Q_chunks@K_chunks.transpose(-2,-1) #(B,z,w,d_k)@(B,z,d_k,w) -> (B,z,w,w)
 
     if(self.pe=="attention"):
-      chunk_curr = chunk_curr.reshape(B,T,w)
-      chunk_curr=self.pe_model(chunk_curr,self.head_n)
+      chunk_curr = chunk_curr.reshape(z,B,w,w)
+      chunk_curr = self.pe_model(chunk_curr,self.head_n)
       chunk_curr = chunk_curr.reshape(B,z,w,w)
     if(self.pe=="relative"):
-        chunk_curr += self.pe_model(Q_chunks.reshape(B,T,d_k)).reshape(B,z,w,w)
-
+      chunk_curr += self.pe_model(Q_chunks.reshape(B,T,d_k))[:, :z*w, :z*w].reshape(B,z,w,w)
+      
     if(pad_mask!=None):
       mask = mask|pad_mask
 
-    chunk_curr = chunk_curr.masked_fill(self.mask, float('-inf'))
+    chunk_curr = chunk_curr.masked_fill(self.mask.unsqueeze(0).unsqueeze(0), float('-inf'))
     chunk_curr = F.softmax(chunk_curr.float(),dim=-1).to(Q.dtype)
 
     chunk_curr = chunk_curr@V_chunks #(B,z,w,w) @ (B,z,w,d_k) -> (B,z,w,d_k)

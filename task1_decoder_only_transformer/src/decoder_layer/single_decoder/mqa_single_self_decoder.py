@@ -63,6 +63,6 @@ class MQASingleSelfDecoder(nn.Module):
 
     h = h.masked_fill(mask[:h.shape[-2], :h.shape[-1]], float('-inf'))
 
-    a = F.softmax(h,dim=-1)@V
+    a = F.softmax(h,dim=-1).to(Q.dtype)@V
     #dropout
     return self.dropModel(a)

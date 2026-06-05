@@ -36,10 +36,15 @@ class Decoder(nn.Module):
     self.ff = FeedForward(config)
     self.an1 = AddNorm(config)
     self.an2 = AddNorm(config)
+    self.pre_ln = config.pre_ln ##added to config file and will be set to true in train.py of TD3 agent
     self.dropout1 = nn.Dropout(p=config.dropout)
     self.dropout2 = nn.Dropout(p=config.dropout)
     
   def forward(self, x,pad_mask:None): #(B,T,C) input
-    x = self.an1(x + self.dropout1(self.conv2(self.ma_self(self.conv1(x),pad_mask))))
-    x = self.an2(x + self.dropout2(self.ff(x)))
+    if(self.pre_ln):
+      x = x + self.dropout1(self.conv2(self.ma_self(self.an1(self.conv1(x)),pad_mask)))
+      x = x + self.dropout2(self.ff(self.an2(x)))
+    else:
+      x = self.an1(x + self.dropout1(self.conv2(self.ma_self(self.conv1(x),pad_mask))))
+      x = self.an2(x + self.dropout2(self.ff(x)))
     return x

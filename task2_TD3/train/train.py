@@ -32,7 +32,8 @@ def main():
         batch_size = 256, #B
         embedding_size = 128, #d_model C #64
         n_heads = 4, #8
-        dropout = 0.1 #INCREASE IF OVERFITTING CONTINUES
+        dropout = 0.1, #INCREASE IF OVERFITTING CONTINUES
+        pre_ln = True
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

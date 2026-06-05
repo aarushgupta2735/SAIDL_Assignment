@@ -12,7 +12,7 @@ class TransformerConfig:
     embedding_size: int = 64 #d_model C #64
     n_heads: int = 4 #8
     dropout: float = 0.3 #INCREASE IF OVERFITTING CONTINUES
-
+    pre_ln: bool = False
 
     # Swappable components (drives registries) 
     attention: str = "standard" #local,sparse,mqa

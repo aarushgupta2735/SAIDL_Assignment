@@ -20,14 +20,14 @@ class ReplayBuffer():
         return (self.states[indices], self.actions[indices], self.rewards[indices], self.next_states[indices], self.dones[indices])
 
     def add(self, state, action, reward, next_state, done):
-        for i in self.n_envs:
+        for i in range(self.n_envs):
             idx = self.curr_D_size % self.D_size
             self.states[idx]      = state[i]
             self.actions[idx]     = action[i]
             self.rewards[idx]     = reward[i]
             self.next_states[idx] = next_state[i]
             self.dones[idx]       = done[i]
-        self.curr_D_size += 1
+            self.curr_D_size += 1
 
     def get_history(self,idx):
         #returns last L pairs of states and actions for a given idx

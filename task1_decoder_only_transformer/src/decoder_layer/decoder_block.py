@@ -16,8 +16,8 @@ class DecoderBlock(nn.Module):
     #initialise N single decoders
     self.decoders = nn.ModuleList([Decoder(config=config) for i in range(config.n_decoder_layers)])
 
-  def forward(self,input):
+  def forward(self,input,pad_mask:None):
     for decoder in self.decoders:
-      input = decoder(input)
+      input = decoder(input,pad_mask)
     return input
     

@@ -37,9 +37,10 @@ class BlockSparseSingleSelfDecoder(nn.Module):
     self.dropModel = nn.Dropout(p=config.dropout)
     #introducing sliding window of window size (w)
     mask = torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
+    
     self.register_buffer('mask',mask) 
 
-  def forward(self,xt): 
+  def forward(self,xt,pad_mask:None): 
     
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k) g
     K = self.WK(xt)
@@ -67,6 +68,9 @@ class BlockSparseSingleSelfDecoder(nn.Module):
       chunk_curr.reshape(B,T,w)
       chunk_curr=self.pe_model(Q)
       chunk_curr.reshape(B,z,w,w)
+
+    if(pad_mask!=None):
+      mask = mask|pad_mask
 
     chunk_curr = chunk_curr.masked_fill(self.mask, float('-inf'))
     chunk_curr = F.softmax(chunk_curr.float(),dim=-1).to(Q.dtype)

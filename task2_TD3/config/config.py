@@ -24,17 +24,8 @@ class TD3config():
     exploration_noise: float = 0.1 #std of noise added during exploration
 
     #train config
-    training_iterations:int = 100000
+    training_iterations:int = 1_000_000
     n_envs:int = 3
     BASE_SEED:int = 42
     eval_iterations: int = 5000
 
-
-@dataclass
-class TransformerConfig():
-
-    #transformer hyperparameters
-    n_layers: int = 2
-    n_heads: int = 4 
-    embed_dim: int = 128
-    context_window:int = 8 

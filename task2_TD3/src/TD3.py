@@ -2,14 +2,14 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import copy
-
-from config.config import TD3config, TransformerConfig
+from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
+from config.config import TD3config
 from .Actor import Actor
 from .Critic import Critic
 from .ReplayBuffer import ReplayBuffer
 
 class TD3(nn.Module):
-    def __init__(self, config:TD3config,transConfig:TransformerConfig,buffer,device):
+    def __init__(self, config:TD3config,tConfig:TransformerConfig,buffer,device):
         super().__init__()
         self.device = device
         self.O = config.obs_features
@@ -25,7 +25,7 @@ class TD3(nn.Module):
         self.a_low = config.a_low
         self.a_high = config.a_high
         
-        self.theta = Actor(config, transConfig, device=device) #takes in states and gives actions : policy
+        self.theta = Actor(config, tConfig, device=device) #takes in states and gives actions : policy
         self.theta_target = copy.deepcopy(self.theta) 
         for param in self.theta_target.parameters():
             param.requires_grad = False

@@ -3,10 +3,10 @@ import numpy as np
 import torch
 import wandb
 
-from config.config import TD3config, TransformerConfig
+from config.config import TD3config
 from src.TD3 import TD3, ReplayBuffer
 from evaluate.rl_logger import RLLogger
-
+from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
 
 def main():
     # ── Config ────────────────────────────────────────────────────────────────
@@ -25,11 +25,14 @@ def main():
         BASE_SEED=42,
     )
 
-    trans_config = TransformerConfig(
-        n_layers=2,
-        n_heads=4,
-        embed_dim=128,
-        context_window=8,
+    tConfig = TransformerConfig(
+        vocab_size = 10,
+        n_decoder_layers = 2,
+        context_window = 8, #L
+        batch_size = 256, #B
+        embedding_size = 128, #d_model C #64
+        n_heads = 4, #8
+        dropout = 0.1 #INCREASE IF OVERFITTING CONTINUES
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -47,8 +50,8 @@ def main():
     observations = torch.tensor(obs_np, dtype=torch.float32, device=device)
 
     # ── Agent & Logger ────────────────────────────────────────────────────────
-    buffer    = ReplayBuffer(config, device)
-    agent     = TD3(config, buffer, device)
+    buffer    = ReplayBuffer(config,tConfig, device)
+    agent     = TD3(config, tConfig, buffer, device)
     logger    = RLLogger(config, run_name="td3_mlp_hopper")
 
     episode_rewards = np.zeros(num_envs)

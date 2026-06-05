@@ -39,7 +39,7 @@ class Decoder(nn.Module):
     self.dropout1 = nn.Dropout(p=config.dropout)
     self.dropout2 = nn.Dropout(p=config.dropout)
     
-  def forward(self, x): #(B,T,C) input
-    x = self.an1(x + self.dropout1(self.conv2(self.ma_self(self.conv1(x)))))
+  def forward(self, x,pad_mask:None): #(B,T,C) input
+    x = self.an1(x + self.dropout1(self.conv2(self.ma_self(self.conv1(x),pad_mask))))
     x = self.an2(x + self.dropout2(self.ff(x)))
     return x

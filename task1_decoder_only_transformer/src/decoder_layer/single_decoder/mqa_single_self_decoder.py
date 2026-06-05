@@ -34,7 +34,7 @@ class MQASingleSelfDecoder(nn.Module):
     mask = torch.triu(torch.ones(self.T, self.T), diagonal=1).bool()
     self.register_buffer('mask',mask) 
 
-  def forward(self,xt,K,V):
+  def forward(self,xt,K,V,pad_mask:None):
     (_,T,_)= xt.shape
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k)
 
@@ -52,6 +52,9 @@ class MQASingleSelfDecoder(nn.Module):
       h+=self.pe_model(Q)
 
     h = h/self.d_k**0.5 #h: (B,T,d_k)@(B,d_k,T) -> (B,T,T)
+
+    if(pad_mask!=None):
+      self.mask = self.mask|pad_mask
 
     h = h.masked_fill(self.mask[:h.shape[-2], :h.shape[-1]], float('-inf'))
 

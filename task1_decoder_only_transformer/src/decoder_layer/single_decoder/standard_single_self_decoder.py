@@ -33,10 +33,12 @@ class StandardSingleSelfDecoder(nn.Module):
     self.WK = nn.Linear(config.embedding_size,config.d_k,bias=False)
     self.WV = nn.Linear(config.embedding_size,config.d_k,bias=False)
     self.dropModel = nn.Dropout(p=config.dropout)
+
     mask = torch.triu(torch.ones(self.T, self.T), diagonal=1).bool()
+      
     self.register_buffer('mask',mask) 
 
-  def forward(self,xt):
+  def forward(self,xt,pad_mask:None):
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k)
     K = self.WK(xt)
     V = self.WV(xt)
@@ -59,6 +61,10 @@ class StandardSingleSelfDecoder(nn.Module):
 
     # Ensure mask inherits the GPU device from the h tensor
     self.mask = self.mask.to(h.device)
+    
+    if(pad_mask!=None):
+      self.mask = self.mask|pad_mask
+
     h = h.masked_fill(self.mask[:h.shape[-2], :h.shape[-1]], float('-inf'))
 
     a = F.softmax(h,dim=-1).to(Q.dtype)@V

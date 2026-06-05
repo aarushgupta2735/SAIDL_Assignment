@@ -36,14 +36,15 @@ class LocalSingleSelfDecoder(nn.Module):
     self.dropModel = nn.Dropout(p=config.dropout)
     #introducing sliding window of window size (w)
     mask_curr = torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
-    mask_prev= torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
+
+    #mask_prev= torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
     self.register_buffer('mask_curr',mask_curr) 
 
-  def forward(self,xt):
+  def forward(self,xt,pad_mask:None):
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k) g
     K = self.WK(xt)
     V = self.WV(xt)
-    
+
     w = self.w
     B,T,d_k = Q.shape
 
@@ -63,6 +64,9 @@ class LocalSingleSelfDecoder(nn.Module):
     if(self.pe=="relative"):
       chunk_curr=self.pe_model(Q)
 
+    if(pad_mask!=None):
+      mask_curr = mask_curr|pad_mask
+      
     chunk_curr = chunk_curr.masked_fill(self.mask_curr, float('-inf')) #TODO : Fix for inference
     chunk_curr = F.softmax(chunk_curr,dim=-1,dtype = torch.float)
     chunk_curr = torch.stack([chunk_curr[i]@V_chunks[i] for i in range(len(chunk_curr))])

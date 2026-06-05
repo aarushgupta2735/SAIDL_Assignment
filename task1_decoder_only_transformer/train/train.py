@@ -42,7 +42,7 @@ print(f"Train tokens: {len(train_tokens):,}  |  Val tokens: {len(val_tokens):,}"
 config = TransformerConfig(
     vocab_size          = tokenizer.n_vocab,
     attention           = "standard", #local,sparse,mqa,standard
-    positional_encoding = "relative", #rotatory,relative,attention,sinusoidal
+    positional_encoding = "rotatory", #rotatory,relative,attention,sinusoidal
 )
 train_config = TrainConfig()
 
@@ -77,7 +77,7 @@ print(f"Best val loss: {best_ckpt['val_loss']:.4f}")
 
 logger.log_inference_latency(model)
 
-# --- Post-training: sample generation ---
+'''# --- Post-training: sample generation ---
 print("\n--- Sample Generation ---")
 prompt = torch.randint(0, config.vocab_size, (1, 8), device=device)
 generated = prompt.clone()
@@ -90,7 +90,7 @@ print("Tokens:", generated[0].tolist())
 try:
     print("Text:", tokenizer.decode(generated[0].tolist()))
 except Exception:
-    pass
+    pass'''
 
 logger.finish()
 print("Done. Run test/test.py to evaluate on the test set.")

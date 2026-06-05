@@ -53,10 +53,15 @@ class MQASingleSelfDecoder(nn.Module):
 
     h = h/self.d_k**0.5 #h: (B,T,d_k)@(B,d_k,T) -> (B,T,T)
 
+    mask = self.mask
     if(pad_mask!=None):
-      self.mask = self.mask|pad_mask
+      B,_ = pad_mask.shape
+      p1 = torch.repeat_interleave(pad_mask,T).reshape(B,T,T)
+      p2 = torch.repeat_interleave(pad_mask,T).reshape(B,T,T).transpose(-2,-1)
+      p = p1|p2
+      mask = self.mask|p
 
-    h = h.masked_fill(self.mask[:h.shape[-2], :h.shape[-1]], float('-inf'))
+    h = h.masked_fill(mask[:h.shape[-2], :h.shape[-1]], float('-inf'))
 
     a = F.softmax(h,dim=-1)@V
     #dropout

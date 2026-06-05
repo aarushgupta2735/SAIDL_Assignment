@@ -24,8 +24,8 @@ class Actor(nn.Module):
 
     def forward(self, x,history_states=None, history_actions=None, pad_mask=None): #Takes in states and gives actions
         if(self.use_transformer):
-            out = self.net(history_actions,history_states,pad_mask)
+            out = self.net(history_states,history_actions,pad_mask)
         else:
             out = self.net(x)
         out = torch.clamp(out, self.a_low, self.a_high)
-        return x
+        return out

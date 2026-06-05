@@ -37,11 +37,11 @@ class TransformerConfig:
 
     @property
     def pad_pre_attn_ksize(self):
-        return (self.conv_pre_attn_k_size-1)/2
+        return (self.conv_pre_attn_k_size-1)//2
     
     @property
     def pad_interleaved_k_size(self):
-        return (self.conv_interleaved_k_size-1)/2
+        return (self.conv_interleaved_k_size-1)//2
     
     @property
     def k_relative_pe(self):

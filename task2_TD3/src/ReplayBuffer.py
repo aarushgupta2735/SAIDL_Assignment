@@ -47,7 +47,7 @@ class ReplayBuffer():
         idx = self.curr_D_size - 1
         history_states  = []
         history_actions = []
-
+        
         for i in range(self.L):
             curr_idx = (idx - i) % self.D_size
             if self.env_ids[curr_idx].item() != env_id:

@@ -5,7 +5,7 @@ import math
 
 from config.transformer_config import TransformerConfig
 from config.train_config import TrainConfig
-from src.add_and_norm import AddNorm
+from task1_decoder_only_transformer.src.layerNorm import AddNorm
 from .decoder import Decoder
 
 pre_ln = {

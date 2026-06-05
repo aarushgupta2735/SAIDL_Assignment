@@ -12,6 +12,7 @@ from src.data_prep.positional_embedding.standard_positional_embedding import Sta
 class Transformer(nn.Module):
     def __init__(self,config:TransformerConfig):
         super().__init__()
+        
         self.T = config.context_window
         self.B = config.batch_size
         self.V = config.vocab_size
@@ -21,6 +22,7 @@ class Transformer(nn.Module):
         self.decoder_block = DecoderBlock(config)
         #linear
         self.lin = nn.Linear(config.embedding_size,config.vocab_size)
+        self.lin.weight = self.data_prep.ve.embed.weight
 
     def forward(self, x, y): 
         #embed + positional encoding + encoder output + decoder output + linear + softmax

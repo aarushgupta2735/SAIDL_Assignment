@@ -10,7 +10,7 @@ from .mqa_multi_self_decoder import MQAMultiSelfDecoder
 from .multi_self_decoder import MultiSelfDecoder
 
 from src.feedforward import FeedForward
-from src.add_and_norm import AddNorm
+from task1_decoder_only_transformer.src.layerNorm import AddNorm
 
 Attention = {
     "standard": MultiSelfDecoder,
@@ -28,23 +28,25 @@ ConvArch = {
 class Decoder(nn.Module):
   #multi-attention -- > add and norm --> feed forward --> add and norm
   def __init__(self, config: TransformerConfig):
-    super().__init__()
-    self.C = config.embedding_size
-    self.conv1 = ConvArch[config.conv_type][0](self.C,self.C,config.conv_pre_attn_k_size)
-    self.conv2 = ConvArch[config.conv_type][1](self.C,self.C,config.conv_interleaved_k_size)
-    self.ma_self = Attention[config.attention](config)
-    self.ff = FeedForward(config)
-    self.an1 = AddNorm(config)
-    self.an2 = AddNorm(config)
-    self.pre_ln = config.pre_ln ##added to config file and will be set to true in train.py of TD3 agent
-    self.dropout1 = nn.Dropout(p=config.dropout)
-    self.dropout2 = nn.Dropout(p=config.dropout)
-    
-  def forward(self, x,pad_mask=None): #(B,T,C) input
-    if(self.pre_ln):
-      x = x + self.dropout1(self.conv2(self.ma_self(self.an1(self.conv1(x)),pad_mask)))
-      x = x + self.dropout2(self.ff(self.an2(x)))
-    else:
-      x = self.an1(x + self.dropout1(self.conv2(self.ma_self(self.conv1(x),pad_mask))))
-      x = self.an2(x + self.dropout2(self.ff(x)))
-    return x
+      super().__init__()
+      self.C = config.embedding_size
+      self.conv1 = ConvArch[config.conv_type][0](self.C, self.C, config.conv_pre_attn_k_size, 1, config.pad_pre_attn_ksize)
+      self.conv2 = ConvArch[config.conv_type][1](self.C, self.C, config.conv_interleaved_k_size, 1, config.pad_interleaved_k_size)
+      self.ma_self = Attention[config.attention](config)
+      self.ff = FeedForward(config)
+      self.an1 = AddNorm(config)
+      self.an2 = AddNorm(config)
+      self.pre_ln = config.pre_ln
+      self.dropout1 = nn.Dropout(p=config.dropout)
+      self.dropout2 = nn.Dropout(p=config.dropout)
+
+  def forward(self, x, pad_mask=None):  # (B,T,C)
+      if self.pre_ln:
+          x = x + self.dropout1(self.ma_self(self.an1(self.conv1(x.transpose(-2,-1)).transpose(-2,-1)), pad_mask))
+          x = x + self.dropout1(self.conv2(x.transpose(-2,-1)).transpose(-2,-1))  # interleaved conv after attention
+          x = x + self.dropout2(self.ff(self.an2(x)))
+      else:
+          x = self.an1(x + self.dropout1(self.ma_self(self.conv1(x.transpose(-2,-1)).transpose(-2,-1), pad_mask)))
+          x = self.an2(x + self.dropout1(self.conv2(x.transpose(-2,-1)).transpose(-2,-1)))
+          x = self.an2(x + self.dropout2(self.ff(x)))
+      return x

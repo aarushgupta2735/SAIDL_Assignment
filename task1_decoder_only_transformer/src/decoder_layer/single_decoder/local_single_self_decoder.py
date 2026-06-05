@@ -62,7 +62,8 @@ class LocalSingleSelfDecoder(nn.Module):
     if(self.pe=="attention"):
       chunk_curr=self.pe_model(chunk_curr,self.head_n)
     if(self.pe=="relative"):
-      chunk_curr=self.pe_model(Q)
+        chunk_curr += self.pe_model(torch.stack(Q_chunks))
+
 
     if(pad_mask!=None):
       mask_curr = mask_curr|pad_mask
@@ -76,7 +77,7 @@ class LocalSingleSelfDecoder(nn.Module):
     if(self.pe=="attention"):
       chunk_prev=self.pe_model(chunk_prev,self.head_n)
     if(self.pe=="relative"):
-      chunk_prev=self.pe_model(Q)
+        chunk_prev += self.pe_model(torch.stack(Q_chunks[1:]))
 
     chunk_prev = F.softmax(chunk_prev,dim=-1,dtype = torch.float)
     chunk_prev = torch.stack([chunk_prev[i-1]@V_chunks[i] for i in range(1,len(V_chunks))])

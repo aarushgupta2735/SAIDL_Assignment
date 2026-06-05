@@ -28,6 +28,12 @@ class TD3(nn.Module):
         self.a_high = config.a_high
         
         self.actor_is_transformer = config.use_transformer
+        self.is_velocity_hidden = config.is_velocity_hidden
+        self.add_observation_noise = config.add_observation_noise
+        self.delay_rewards = config.delay_rewards
+        self.on_RLHF = config.on_RLHF
+        self.include_x_vel = config.include_x_vel
+
         self.n_envs = config.n_envs
         self.theta = Actor(config, tConfig, device=device) #takes in states and gives actions : policy
         self.theta_target = copy.deepcopy(self.theta) 
@@ -53,15 +59,17 @@ class TD3(nn.Module):
         self.polyak_coeff = config.polyak_coeff
         self.policy_delay = config.policy_delay
 
-    def select_action(self,curr_state,explore=True):
+    def select_action(self,curr_state,explore=True,n_envs_override=None):
 
         if(self.actor_is_transformer):
             #we need the history of curr_state
             batch_states = []
             batch_actions = []
             batch_masks = []
-
-            for i in range(self.n_envs):
+            n = self.n_envs
+            if(n_envs_override!=None):
+                n = 1
+            for i in range(n):
                 states,actions,masks = self.D.get_current_history(i)
                 batch_states.append(states)
                 batch_actions.append(actions)
@@ -69,7 +77,6 @@ class TD3(nn.Module):
             action = self.theta(None,torch.stack(batch_states),torch.stack(batch_actions),torch.stack(batch_masks))
         else:
             action = self.theta(curr_state)
-
         ##add guassian noise
         if(explore):
             noise = torch.normal(0,self.exp_noise,action.shape).to(device=self.device)
@@ -83,17 +90,17 @@ class TD3(nn.Module):
 
         batch_states,batch_actions,batch_masks = self.D.batch_get_history(idx+1)
 
-        #Find A_
-        if(self.actor_is_transformer):
-            A_ = self.theta_target(None,batch_states,batch_actions,batch_masks)
-        else:
-            A_ = self.theta_target(S_)
-
         ##add guassian noise and clip it
-        noise = torch.normal(0,self.policy_noise,A_.shape).to(device=self.device)
-        noise = torch.clip(noise,-self.noise_clip,self.noise_clip).to(device=self.device)
-        A_+=noise
-        A_=torch.clip(A_,self.a_low,self.a_high)
+        with torch.no_grad():
+            #Find A_
+            if(self.actor_is_transformer):
+                A_ = self.theta_target(None,batch_states,batch_actions,batch_masks)
+            else:
+                A_ = self.theta_target(S_)
+            noise = torch.normal(0,self.policy_noise,A_.shape).to(device=self.device)
+            noise = torch.clip(noise,-self.noise_clip,self.noise_clip).to(device=self.device)
+            A_+=noise
+            A_=torch.clip(A_,self.a_low,self.a_high)
 
         #compute losses and objective funtion for policy
         self.phi1_optimiser.zero_grad()
@@ -108,7 +115,7 @@ class TD3(nn.Module):
         loss2.backward()
         self.phi1_optimiser.step()
         self.phi2_optimiser.step()
-        loss = 0
+        loss = torch.tensor(0.0)
         #at every policy_delay steps, update the policy and target networks
         if(curr_iter%self.policy_delay==0):
             self.actor_optimiser.zero_grad()

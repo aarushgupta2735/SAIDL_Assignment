@@ -14,7 +14,7 @@ class ReplayBuffer():
         self.D_size = config.D_size
 
     def sample(self,batch_size):
-        indices = torch.randint(0, self.curr_D_size, (batch_size,))
+        indices = torch.randint(0, min(self.curr_D_size,self.D_size), (batch_size,))
         return (self.states[indices], self.actions[indices], self.rewards[indices], self.next_states[indices], self.dones[indices])
 
     def add(self, state, action, reward, next_state, done):

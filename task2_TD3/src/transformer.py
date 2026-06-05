@@ -13,8 +13,8 @@ class Transformer(nn.Module):
         self.output_projection = nn.Linear(tConfig.embedding_size,config.act_features)
         self.tanh = nn.Tanh()
 
-    def forward(self,history_states,history_actions,pad_mask): #(B,L,obs_features+act_features) 
-        out1 = self.input_projection(torch.cat((history_actions,history_states),dim=1)) #onvers to (B,L,embed_size)
+    def forward(self,history_states,history_actions,pad_mask=None): #(B,L,obs_features+act_features) 
+        out1 = self.input_projection(torch.cat((history_actions,history_states),dim=-1)) #onvers to (B,L,embed_size)
         out1 = self.decoder_block(out1,pad_mask) #(B,L,E)
         return self.tanh(self.output_projection(out1[:,-1,:])) #returns action between [-1,1]
         

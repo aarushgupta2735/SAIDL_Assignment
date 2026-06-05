@@ -20,7 +20,7 @@ class DecoderBlock(nn.Module):
     self.decoders = nn.ModuleList([Decoder(config=config) for i in range(config.n_decoder_layers)])
     self.an = pre_ln[config.pre_ln](config)
 
-  def forward(self,input,pad_mask:None):
+  def forward(self,input,pad_mask=None):
     for decoder in self.decoders:
       input = decoder(input,pad_mask)
     return self.an(input)

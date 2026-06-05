@@ -59,8 +59,11 @@ def main():
 
     # ── Training loop ─────────────────────────────────────────────────────────
     for step in range(config.training_iterations):
-
-        actions = agent.select_action(observations, explore=True)
+        #Random action if size of buffer (step-1) is less than context window :WARMUP PHASE, CAN BE CHANGED WITH BATCH_SIZE OR COMPLETELY OMITTED
+        if(step-1<tConfig.context_window): 
+            actions = envs.action_space.sample()
+        else:
+            actions = agent.select_action(observations, explore=True)
 
         next_obs_np, rewards, terminations, truncations, infos = envs.step(actions)
         dones = terminations | truncations

@@ -17,7 +17,7 @@ class MQAMultiSelfDecoder(nn.Module):
         self.layers = nn.ModuleList([MQASingleSelfDecoder(config,i) for i in range(config.n_heads)])
         self.W0 = nn.Linear(config.embedding_size,config.embedding_size)
 
-    def forward(self,xt,pad_mask:None):
+    def forward(self,xt,pad_mask=None):
         K = self.WK(xt)
         V = self.WV(xt)
         heads_out = [layer(xt,K,V,pad_mask) for layer in self.layers]

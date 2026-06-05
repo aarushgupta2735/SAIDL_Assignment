@@ -40,7 +40,7 @@ class LocalSingleSelfDecoder(nn.Module):
     #mask_prev= torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
     self.register_buffer('mask_curr',mask_curr) 
 
-  def forward(self,xt,pad_mask:None):
+  def forward(self,xt,pad_mask=None):
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k) g
     K = self.WK(xt)
     V = self.WV(xt)

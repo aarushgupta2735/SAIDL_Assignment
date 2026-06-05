@@ -38,7 +38,7 @@ class StandardSingleSelfDecoder(nn.Module):
       
     self.register_buffer('mask',mask) 
 
-  def forward(self,xt,pad_mask:None):
+  def forward(self,xt,pad_mask=None):
     Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k)
     K = self.WK(xt)
     V = self.WV(xt)
@@ -61,7 +61,7 @@ class StandardSingleSelfDecoder(nn.Module):
 
     # Ensure mask inherits the GPU device from the h tensor
     self.mask = self.mask.to(h.device)
-    
+
     if(pad_mask!=None):
       self.mask = self.mask|pad_mask
 

@@ -3,10 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-from config.transformer_config import TransformerConfig
-from config.train_config import TrainConfig
+from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
+from task1_decoder_only_transformer.config.train_config import TrainConfig
 from task1_decoder_only_transformer.src.layerNorm import AddNorm
-from .decoder import Decoder
+from task1_decoder_only_transformer.src.decoder_layer.decoder import Decoder
 
 pre_ln = {
   True: AddNorm,

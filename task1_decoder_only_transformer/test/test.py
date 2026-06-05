@@ -25,9 +25,9 @@ import torch
 import tiktoken
 import wandb
 
-from src.transformer import Transformer
-from config.transformer_config import TransformerConfig
-from evaluate.validate import evaluate
+from task1_decoder_only_transformer.src.transformer import Transformer
+from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
+from task1_decoder_only_transformer.evaluate.validate import evaluate
 
 
 def parse_args():

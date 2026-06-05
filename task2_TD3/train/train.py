@@ -3,9 +3,9 @@ import numpy as np
 import torch
 import wandb
 
-from config.config import TD3config
-from src.TD3 import TD3, ReplayBuffer
-from evaluate.rl_logger import RLLogger
+from task2_TD3.config.config import TD3config
+from task2_TD3.src.TD3 import TD3, ReplayBuffer
+from task2_TD3.evaluate.rl_logger import RLLogger
 from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
 
 def main():
@@ -23,8 +23,8 @@ def main():
         training_iterations=1_000_000,
         n_envs=3,
         BASE_SEED=42,
-        use_transformer=False
-        
+        use_transformer=False,
+        include_x_vel=False
     )
 
     tConfig = TransformerConfig(
@@ -35,7 +35,12 @@ def main():
         embedding_size = 128, #d_model C #64
         n_heads = 4, #8
         dropout = 0.1, #INCREASE IF OVERFITTING CONTINUES
-        pre_ln = True
+        pre_ln = True,
+        attention = "standard", #local,sparse,mqa
+        positional_encoding = "sinusoidal", #rotatory,relative,attention  
+        use_conv =False,
+        conv_type = "none",        # "pre_attn", "interleaved" ## Not implemented for now: "depthwise", "gated_ffn"
+        window_size=1
     )
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

@@ -3,10 +3,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import copy
 from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
-from config.config import TD3config
-from .Actor import Actor
-from .Critic import Critic
-from .ReplayBuffer import ReplayBuffer
+from task2_TD3.config.config import TD3config
+from task2_TD3.src.Actor import Actor
+from task2_TD3.src.Critic import Critic
+from task2_TD3.src.ReplayBuffer import ReplayBuffer
 
 
 

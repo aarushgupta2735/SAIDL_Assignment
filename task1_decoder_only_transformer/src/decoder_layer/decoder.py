@@ -3,13 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-from config.transformer_config import TransformerConfig
-from config.train_config import TrainConfig
+from  task1_decoder_only_transformer.config.transformer_config import TransformerConfig
+from task1_decoder_only_transformer.config.train_config import TrainConfig
 
-from .mqa_multi_self_decoder import MQAMultiSelfDecoder
-from .multi_self_decoder import MultiSelfDecoder
+from task1_decoder_only_transformer.src.decoder_layer.mqa_multi_self_decoder import MQAMultiSelfDecoder
+from task1_decoder_only_transformer.src.decoder_layer.multi_self_decoder import MultiSelfDecoder
 
-from src.feedforward import FeedForward
+from task1_decoder_only_transformer.src.feedforward import FeedForward
 from task1_decoder_only_transformer.src.layerNorm import AddNorm
 
 Attention = {

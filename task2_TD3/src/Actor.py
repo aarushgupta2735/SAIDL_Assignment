@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from config.config import TD3config
+from task2_TD3.config.config import TD3config
 from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
-from .transformer import Transformer
+from task2_TD3.src.transformer import Transformer
 class Actor(nn.Module):
     def __init__(self, config: TD3config, tConfig:TransformerConfig, device):
         super().__init__()
@@ -12,11 +12,11 @@ class Actor(nn.Module):
             self.net = Transformer(config,tConfig).to(device=device)
         else:
             self.net = nn.Sequential(
-                nn.Linear(config.obs_features, 256),
+                nn.Linear(config.obs_features, 256,bias=True),
                 nn.ReLU(),
-                nn.Linear(256, 256),
+                nn.Linear(256, 256,bias=True),
                 nn.ReLU(),
-                nn.Linear(256, config.act_features),
+                nn.Linear(256, config.act_features,bias=True),
                 nn.Tanh()
             ).to(device=device)
         self.a_low = config.a_low

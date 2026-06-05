@@ -4,9 +4,9 @@ import torch.nn.functional as F
 
 from config.transformer_config import TransformerConfig
 
-from src.data_prep.data_prep import DataPrep
-from src.decoder_layer.decoder_block import DecoderBlock
-from src.data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
+from task1_decoder_only_transformer.src.data_prep.data_prep import DataPrep
+from task1_decoder_only_transformer.src.decoder_layer.decoder_block import DecoderBlock
+from task1_decoder_only_transformer.src.data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
 
 
 class Transformer(nn.Module):

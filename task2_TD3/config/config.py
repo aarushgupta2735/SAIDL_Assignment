@@ -5,6 +5,7 @@ class TD3config():
 
     ##env feartures: hardcoded for HopperV5
     #obs_features as property
+    obs_features: int = 12
     act_features: int = 3
     a_low: int = -1
     a_high: int = 1
@@ -38,11 +39,11 @@ class TD3config():
         #Apply each modification independently to Hopper-v5; compare MLP-TD3 vs. TransformerTD3 (best L and L=32).
     observation_noise_std: int = 0.1 #0.1,0.3
 
-    @property
-    def obs_features(self):
+    #@property
+    '''def obs_features(self):
         x = 0
         if(self.include_x_vel):
             x = 1
         if(self.is_velocity_hidden):
             return 11-2+x
-        return 11+x
+        return 11+x'''

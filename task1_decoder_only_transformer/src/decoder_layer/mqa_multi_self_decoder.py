@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-from config.transformer_config import TransformerConfig
+from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
 
-from .single_decoder.mqa_single_self_decoder import MQASingleSelfDecoder
+from  task1_decoder_only_transformer.src.decoder_layer.single_decoder.mqa_single_self_decoder import MQASingleSelfDecoder
 
 
 

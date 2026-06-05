@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from config.config import TD3config, TransformerConfig
-
+from task2_TD3.config.config import TD3config
+from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
 
 class ReplayBuffer():
     def __init__(self, config: TD3config, tConfig: TransformerConfig, device):

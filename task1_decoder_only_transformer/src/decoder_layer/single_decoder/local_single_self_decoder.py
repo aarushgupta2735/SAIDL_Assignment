@@ -3,13 +3,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-from config.transformer_config import TransformerConfig
-from config.train_config import TrainConfig
+from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
+from task1_decoder_only_transformer.config.train_config import TrainConfig
 
-from src.data_prep.positional_embedding.attention_positional_embedding import AttentionPositionalEmbedding
-from src.data_prep.positional_embedding.relative_positional_embedding import RelativePositionalEmbedding
-from src.data_prep.positional_embedding.rotatory_positional_embedding import RotatoryPositionalEmbedding
-from src.data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
+from task1_decoder_only_transformer.src.data_prep.positional_embedding.attention_positional_embedding import AttentionPositionalEmbedding
+from task1_decoder_only_transformer.src.data_prep.positional_embedding.relative_positional_embedding import RelativePositionalEmbedding
+from task1_decoder_only_transformer.src.data_prep.positional_embedding.rotatory_positional_embedding import RotatoryPositionalEmbedding
+from task1_decoder_only_transformer.src.data_prep.positional_embedding.standard_positional_embedding import StandardPositionalEmbedding
 
 PE ={
   "sinusoidal": StandardPositionalEmbedding,

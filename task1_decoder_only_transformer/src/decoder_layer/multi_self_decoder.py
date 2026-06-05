@@ -3,12 +3,12 @@ import torch.nn as nn
 import torch.nn.functional as F
 import math
 
-from config.transformer_config import TransformerConfig
+from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
 
-from .single_decoder.standard_single_self_decoder import StandardSingleSelfDecoder
-from .single_decoder.local_single_self_decoder import LocalSingleSelfDecoder
-from .single_decoder.block_sparse_single_self_decoder_block import BlockSparseSingleSelfDecoder 
-from .single_decoder.mqa_single_self_decoder import MQASingleSelfDecoder
+from task1_decoder_only_transformer.src.decoder_layer.single_decoder.standard_single_self_decoder import StandardSingleSelfDecoder
+from task1_decoder_only_transformer.src.decoder_layer.single_decoder.local_single_self_decoder import LocalSingleSelfDecoder
+from task1_decoder_only_transformer.src.decoder_layer.single_decoder.block_sparse_single_self_decoder_block import BlockSparseSingleSelfDecoder 
+from task1_decoder_only_transformer.src.decoder_layer.single_decoder.mqa_single_self_decoder import MQASingleSelfDecoder
 
 #Might need to change
 

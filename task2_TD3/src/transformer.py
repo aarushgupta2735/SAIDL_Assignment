@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
-from config.config import TD3config
+from task2_TD3.config.config import TD3config
 from task1_decoder_only_transformer.src.decoder_layer.decoder_block import DecoderBlock
 
 class Transformer(nn.Module):

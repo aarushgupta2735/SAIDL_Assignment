@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from config.config import TD3config
+from task2_TD3.config.config import TD3config
 
 
 class Critic(nn.Module):

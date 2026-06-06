@@ -20,7 +20,7 @@ class ReplayBuffer():
         self.D_size      = config.D_size
         self.L           = tConfig.context_window
 
-    def add(self, state, action, reward, next_state, done):
+    def add_old(self, state, action, reward, next_state, done):
         for i in range(self.n_envs):
             idx = self.curr_D_size % self.D_size
             self.states[idx]      = state[i]
@@ -31,8 +31,20 @@ class ReplayBuffer():
             self.env_ids[idx]     = i
             self.curr_D_size += 1
 
+    def add(self, state, action, reward, next_state, done):
+        indices = torch.arange(self.n_envs) + self.curr_D_size
+        indices = indices % self.D_size
+        self.states[indices]      = state
+        self.actions[indices]     = action
+        self.rewards[indices]     = reward
+        self.next_states[indices] = next_state
+        self.dones[indices]       = done
+        self.env_ids[indices]     = torch.arange(self.n_envs, device=self.device)
+        self.curr_D_size += self.n_envs
+
+
     def sample(self, batch_size):
-        indices = torch.randint(0, min(self.curr_D_size, self.D_size), (batch_size,))
+        indices = torch.randint(0, min(self.curr_D_size, self.D_size), (batch_size,), device=self.device)        
         return (
             self.states[indices],
             self.actions[indices],
@@ -173,5 +185,3 @@ class ReplayBuffer():
         padding_mask = ~valid  # (B, L)
 
         return states_hist, actions_hist, padding_mask
-EOF
-Output

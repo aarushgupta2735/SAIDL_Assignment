@@ -2,7 +2,7 @@ import gymnasium as gym
 import numpy as np
 import torch
 import wandb
-
+import time
 from task2_TD3.config.config import TD3config
 from task2_TD3.src.TD3 import TD3, ReplayBuffer
 from task2_TD3.evaluate.rl_logger import RLLogger
@@ -81,14 +81,16 @@ def main():
     # ── Training loop ────────────────a─────────────────────────────────────────
     for step in range(config.training_iterations):
         #Random action befo
+        
         warmup_steps = tConfig.context_window * config.n_envs
         if buffer.curr_D_size < warmup_steps:
             #print(f"Step {step}: warmup, buffer={buffer.curr_D_size}/{warmup_steps}")
             actions = np.stack([envs.single_action_space.sample() for _ in range(config.n_envs)])
         else:
             actions = agent.select_action(observations, explore=True)
-        
+        t0 = time.time()
         next_obs_np, rewards, terminations, truncations, infos = envs.step(actions)
+        print(f"update: {time.time()-t0:.3f}s")
         if np.isnan(rewards).any():
             print(f"NaN reward at step {step}")
         #remove velocity componenets if velocity is hidden 

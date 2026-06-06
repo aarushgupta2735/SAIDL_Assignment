@@ -113,7 +113,7 @@ class ReplayBuffer():
 
         return states_tensor, actions_tensor, padding_mask
 
-    def batch_get_history(self, b_idx):
+    def batch_get_history_old(self, b_idx):
         batch_states  = []
         batch_actions = []
         batch_masks   = []
@@ -123,3 +123,55 @@ class ReplayBuffer():
             batch_actions.append(a)
             batch_masks.append(m)   
         return torch.stack(batch_states), torch.stack(batch_actions), torch.stack(batch_masks)
+    
+    def batch_get_history(self, b_idx):
+        """
+        Vectorized history fetch. No Python loops over batch.
+        b_idx: (B,) tensor of buffer indices
+        Returns:
+            states  : (B, L, obs_features)
+            actions : (B, L, act_features)
+            masks   : (B, L) bool — True = masked
+        """
+        B = b_idx.shape[0]
+        L = self.L
+        device = self.device
+
+        # Build index matrix: (B, L) where each row is [idx, idx-1, ..., idx-(L-1)]
+        offsets = torch.arange(L - 1, -1, -1, device=device).unsqueeze(0)  # (1, L)
+        all_idx = (b_idx.unsqueeze(1) - offsets) % self.D_size              # (B, L)
+
+        # Gather states, actions, dones, env_ids
+        states_hist  = self.states[all_idx]   # (B, L, obs_features)
+        actions_hist = self.actions[all_idx]  # (B, L, act_features)
+        dones_hist   = self.dones[all_idx].squeeze(-1)    # (B, L)
+        envid_hist   = self.env_ids[all_idx]              # (B, L)
+
+        # Reference env_id is from the query index (rightmost = most recent)
+        ref_env = self.env_ids[b_idx].unsqueeze(1)  # (B, 1)
+
+        # Valid: same env_id AND not past an episode boundary
+        # Walk left-to-right (oldest to newest): once a done or env mismatch is hit, all older are invalid
+        # We work right-to-left: position L-1 is always valid if env matches
+        env_match = (envid_hist == ref_env)  # (B, L)
+
+        # Episode boundary: done at position i invalidates positions 0..i-1
+        # Flip to right-to-left, cumsum to propagate invalidity
+        dones_flipped = dones_hist.flip(dims=[1])          # (B, L) newest first
+        # shift by 1: a done at step t invalidates steps before t
+        boundary = torch.zeros_like(dones_flipped)
+        boundary[:, 1:] = dones_flipped[:, :-1]
+        invalid_from_done = boundary.cumsum(dim=1).flip(dims=[1]).bool()  # (B, L)
+
+        valid = env_match & ~invalid_from_done  # (B, L)
+
+        # Zero out invalid positions
+        states_hist  = states_hist  * valid.unsqueeze(-1).float()
+        actions_hist = actions_hist * valid.unsqueeze(-1).float()
+
+        # Padding mask: True where invalid (padded)
+        padding_mask = ~valid  # (B, L)
+
+        return states_hist, actions_hist, padding_mask
+EOF
+Output

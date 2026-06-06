@@ -3,5 +3,5 @@ from task1_decoder_only_transformer.train.train import main as main_decoder_only
 
 
 if __name__ == "__main__":
-    main_td3_transformer()
-    #main_decoder_only_transformer()
+    #main_td3_transformer()
+    main_decoder_only_transformer()

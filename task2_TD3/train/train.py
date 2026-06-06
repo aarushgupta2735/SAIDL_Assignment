@@ -24,7 +24,7 @@ def main():
         n_envs=3,
         BASE_SEED=42,
         use_transformer=False,
-        include_x_vel=False
+        exclude_x_vel=False
     )
 
     tConfig = TransformerConfig(
@@ -48,14 +48,23 @@ def main():
 
     # ── Environments ──────────────────────────────────────────────────────────
     num_envs = config.n_envs
-    env_fns  = [lambda: gym.make("Hopper-v5", render_mode=None,exclude_current_positions_from_observation=config.include_x_vel) for _ in range(num_envs)]
+    env_fns  = [lambda: gym.make("Hopper-v5", render_mode=None,exclude_current_positions_from_observation=config.exclude_x_vel) for _ in range(num_envs)]
     envs     = gym.vector.AsyncVectorEnv(env_fns)
 
-    eval_env = gym.make("Hopper-v5", render_mode=None,exclude_current_positions_from_observation=config.include_x_vel)
+    eval_env = gym.make("Hopper-v5", render_mode=None,exclude_current_positions_from_observation=config.exclude_x_vel)
 
     seeds = [config.BASE_SEED + i for i in range(num_envs)]
     obs_np, _ = envs.reset(seed=seeds)
     observations = torch.tensor(obs_np, dtype=torch.float32, device=device)
+
+    #remove velocity componenets if velocity is hidden 
+    if(config.is_velocity_hidden):
+        observations = torch.cat((observations[:,:5],observations[:,7:]),dim=-1).to(device)
+    #observation noise if given
+    if(config.add_observation_noise):
+        noise = torch.normal(mean=0,std=config.observation_noise_std,size=observations.shape).to(device)
+        observations+=noise
+    
 
     # ── Agent & Logger ────────────────────────────────────────────────────────
     buffer    = ReplayBuffer(config,tConfig, device)
@@ -63,6 +72,7 @@ def main():
     logger    = RLLogger(config, run_name="td3_mlp_hopper")
 
     episode_rewards = np.zeros(num_envs)
+    buffer_delay_rewards = np.zeros(shape=(num_envs,config.K_delayed_rewards-1))
 
     # ── Training loop ────────────────a─────────────────────────────────────────
     for step in range(config.training_iterations):
@@ -70,18 +80,37 @@ def main():
         actions = agent.select_action(observations, explore=True)
 
         next_obs_np, rewards, terminations, truncations, infos = envs.step(actions)
+
+        #remove velocity componenets if velocity is hidden 
+        next_obs = torch.tensor(next_obs_np,dtype=torch.float32,device=device)        
+        if(config.is_velocity_hidden):
+            next_obs = torch.cat((next_obs[:,:5],next_obs[:,7:]),dim=-1).to(device)
+        #add observation noise if required
+        if(config.add_observation_noise):
+            noise = torch.normal(mean=0,std=config.observation_noise_std,size=next_obs.shape).to(device)
+            next_obs+=noise
+
+        #relay rewards if asked
+        if(config.delay_rewards):
+            if(step%config.K_delayed_rewards==0):
+                rewards+=buffer_delay_rewards.sum(axis=-1,dtype=torch.float32)
+                buffer_delay_rewards = np.zeros(shape=(num_envs,config.K_delayed_rewards-1))
+            else:
+                buffer_delay_rewards[:,step%config.K_delayed_rewards] = rewards
+                rewards = np.zeros(num_envs)
+
         dones = terminations | truncations
 
-        real_next_obs = next_obs_np.copy()
+        real_next_obs = next_obs.clone().detach()
         for i, done in enumerate(dones):
             if done and "final_observation" in infos and infos["final_observation"][i] is not None:
-                real_next_obs[i] = infos["final_observation"][i]
+                real_next_obs[i] = torch.tensor(infos["final_observation"][i], dtype=torch.float32, device=device)
 
         buffer.add(
             state      = observations,
             action     = torch.tensor(actions,       dtype=torch.float32, device=device),
             reward     = torch.tensor(rewards,       dtype=torch.float32, device=device).unsqueeze(-1),
-            next_state = torch.tensor(real_next_obs, dtype=torch.float32, device=device),
+            next_state = real_next_obs,
             done       = torch.tensor(dones,         dtype=torch.float32, device=device).unsqueeze(-1),
         )
 
@@ -124,7 +153,9 @@ def main():
                 max_return=float(np.max(returns)),
             )
 
-        observations = torch.tensor(next_obs_np, dtype=torch.float32, device=device)
+        observations = next_obs
+        #observation noise if given
+
 
     # ── Cleanup ───────────────────────────────────────────────────────────────
     envs.close()

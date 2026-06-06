@@ -27,12 +27,7 @@ class TD3(nn.Module):
         self.a_low = config.a_low
         self.a_high = config.a_high
         
-        self.actor_is_transformer = config.use_transformer
-        self.is_velocity_hidden = config.is_velocity_hidden
-        self.add_observation_noise = config.add_observation_noise
-        self.delay_rewards = config.delay_rewards
         self.on_RLHF = config.on_RLHF
-        self.include_x_vel = config.include_x_vel
 
         self.n_envs = config.n_envs
         self.theta = Actor(config, tConfig, device=device) #takes in states and gives actions : policy

@@ -4,8 +4,8 @@ from dataclasses import dataclass
 class TD3config():
 
     ##env feartures: hardcoded for HopperV5
-    #obs_features as property
-    obs_features: int = 12
+        #obs_features as property
+        #obs_features: int = 12
     act_features: int = 3
     a_low: int = -1
     a_high: int = 1
@@ -16,7 +16,7 @@ class TD3config():
     add_observation_noise: bool = False
     delay_rewards: bool = False
     on_RLHF: bool = False
-    include_x_vel: bool = False
+    exclude_x_vel: bool = False
 
     ##TD3 hyperparamters
     D_size: int = 10**6
@@ -37,13 +37,14 @@ class TD3config():
 
     #partial observability
         #Apply each modification independently to Hopper-v5; compare MLP-TD3 vs. TransformerTD3 (best L and L=32).
-    observation_noise_std: int = 0.1 #0.1,0.3
+    observation_noise_std: float = 0.1 #0.1,0.3
+    K_delayed_rewards: int = 10
 
-    #@property
-    '''def obs_features(self):
-        x = 0
-        if(self.include_x_vel):
-            x = 1
+    @property
+    def obs_features(self):
+        x = 1
+        if(self.exclude_x_vel):
+            x = 0
         if(self.is_velocity_hidden):
             return 11-2+x
-        return 11+x'''
+        return 11+x

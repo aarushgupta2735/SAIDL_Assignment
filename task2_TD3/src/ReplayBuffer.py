@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from task2_TD3.config.config import TD3config
 from task1_decoder_only_transformer.config.transformer_config import TransformerConfig
 
+
 class ReplayBuffer():
     def __init__(self, config: TD3config, tConfig: TransformerConfig, device):
         self.device = device
@@ -15,51 +16,39 @@ class ReplayBuffer():
         self.next_states = torch.zeros(config.D_size, config.obs_features, device=device)
         self.dones       = torch.zeros(config.D_size, 1, device=device)
         self.env_ids     = torch.zeros(config.D_size, dtype=torch.long, device=device)
-        self.curr_D_size = 0
+        self.curr_D_size    = 0   # capped at D_size, used for sampling
+        self.curr_write_ptr = 0   # always advances mod D_size
         self.n_envs      = config.n_envs
         self.D_size      = config.D_size
         self.L           = tConfig.context_window
 
-    def add_old(self, state, action, reward, next_state, done):
-        for i in range(self.n_envs):
-            idx = self.curr_D_size % self.D_size
-            self.states[idx]      = state[i]
-            self.actions[idx]     = action[i]
-            self.rewards[idx]     = reward[i]
-            self.next_states[idx] = next_state[i]
-            self.dones[idx]       = done[i]
-            self.env_ids[idx]     = i
-            self.curr_D_size += 1
-
     def add(self, state, action, reward, next_state, done):
-        indices = torch.arange(self.n_envs) + self.curr_D_size
-        indices = indices % self.D_size
+        indices = (torch.arange(self.n_envs, device=self.device) + self.curr_write_ptr) % self.D_size
         self.states[indices]      = state
         self.actions[indices]     = action
         self.rewards[indices]     = reward
         self.next_states[indices] = next_state
         self.dones[indices]       = done
         self.env_ids[indices]     = torch.arange(self.n_envs, device=self.device)
-        self.curr_D_size += self.n_envs
-
+        self.curr_write_ptr = (self.curr_write_ptr + self.n_envs) % self.D_size
+        self.curr_D_size = min(self.curr_D_size + self.n_envs, self.D_size)
 
     def sample(self, batch_size):
-        indices = torch.randint(0, min(self.curr_D_size, self.D_size), (batch_size,), device=self.device)        
+        indices = torch.randint(0, self.curr_D_size, (batch_size,), device=self.device)
         return (
             self.states[indices],
             self.actions[indices],
             self.rewards[indices],
             self.next_states[indices],
             self.dones[indices],
-            indices, ##added indices to get history before a state
+            indices,
         )
 
-    def get_current_history(self,env_id):
-        #we have the current_size of D with (S,A,R,S_,d) as last element S_ is the last element. Thus idx with current_size+1
-        idx = self.curr_D_size - 1
+    def get_current_history(self, env_id):
+        idx = (self.curr_write_ptr - 1) % self.D_size
         history_states  = []
         history_actions = []
-        
+
         for i in range(self.L):
             curr_idx = (idx - i) % self.D_size
             if self.env_ids[curr_idx].item() != env_id:
@@ -125,63 +114,36 @@ class ReplayBuffer():
 
         return states_tensor, actions_tensor, padding_mask
 
-    def batch_get_history_old(self, b_idx):
-        batch_states  = []
-        batch_actions = []
-        batch_masks   = []
-        for idx in b_idx:
-            s, a, m = self.get_history(idx.item())
-            batch_states.append(s)
-            batch_actions.append(a)
-            batch_masks.append(m)   
-        return torch.stack(batch_states), torch.stack(batch_actions), torch.stack(batch_masks)
-    
     def batch_get_history(self, b_idx):
-        """
-        Vectorized history fetch. No Python loops over batch.
-        b_idx: (B,) tensor of buffer indices
-        Returns:
-            states  : (B, L, obs_features)
-            actions : (B, L, act_features)
-            masks   : (B, L) bool — True = masked
-        """
         B = b_idx.shape[0]
         L = self.L
         device = self.device
 
-        # Build index matrix: (B, L) where each row is [idx, idx-1, ..., idx-(L-1)]
         offsets = torch.arange(L - 1, -1, -1, device=device).unsqueeze(0)  # (1, L)
         all_idx = (b_idx.unsqueeze(1) - offsets) % self.D_size              # (B, L)
 
-        # Gather states, actions, dones, env_ids
-        states_hist  = self.states[all_idx]   # (B, L, obs_features)
-        actions_hist = self.actions[all_idx]  # (B, L, act_features)
-        dones_hist   = self.dones[all_idx].squeeze(-1)    # (B, L)
-        envid_hist   = self.env_ids[all_idx]              # (B, L)
+        states_hist  = self.states[all_idx]                    # (B, L, obs)
+        actions_hist = self.actions[all_idx]                   # (B, L, act)
+        dones_hist   = self.dones[all_idx].squeeze(-1)         # (B, L)
+        envid_hist   = self.env_ids[all_idx]                   # (B, L)
 
-        # Reference env_id is from the query index (rightmost = most recent)
-        ref_env = self.env_ids[b_idx].unsqueeze(1)  # (B, 1)
+        ref_env  = self.env_ids[b_idx].unsqueeze(1)            # (B, 1)
+        env_match = (envid_hist == ref_env)                    # (B, L)
 
-        # Valid: same env_id AND not past an episode boundary
-        # Walk left-to-right (oldest to newest): once a done or env mismatch is hit, all older are invalid
-        # We work right-to-left: position L-1 is always valid if env matches
-        env_match = (envid_hist == ref_env)  # (B, L)
-
-        # Episode boundary: done at position i invalidates positions 0..i-1
-        # Flip to right-to-left, cumsum to propagate invalidity
-        dones_flipped = dones_hist.flip(dims=[1])          # (B, L) newest first
-        # shift by 1: a done at step t invalidates steps before t
+        # done at position i means episode ended there — positions before it in this window
+        # belong to a previous episode. Propagate invalidity leftward.
+        # all_idx is ordered oldest→newest (left→right), so we flip to newest→oldest,
+        # shift done signal by 1 (done at step t invalidates steps before t), cumsum, flip back.
+        dones_flipped = dones_hist.flip(dims=[1])              # newest first
         boundary = torch.zeros_like(dones_flipped)
-        boundary[:, 1:] = dones_flipped[:, :-1]
+        boundary[:, 1:] = dones_flipped[:, :-1]               # shift: done propagates left
         invalid_from_done = boundary.cumsum(dim=1).flip(dims=[1]).bool()  # (B, L)
 
-        valid = env_match & ~invalid_from_done  # (B, L)
+        valid = env_match & ~invalid_from_done                 # (B, L)
 
-        # Zero out invalid positions
         states_hist  = states_hist  * valid.unsqueeze(-1).float()
         actions_hist = actions_hist * valid.unsqueeze(-1).float()
 
-        # Padding mask: True where invalid (padded)
-        padding_mask = ~valid  # (B, L)
+        padding_mask = ~valid                                  # True = masked
 
         return states_hist, actions_hist, padding_mask

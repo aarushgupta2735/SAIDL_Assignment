@@ -67,11 +67,11 @@ class BlockSparseSingleSelfDecoder(nn.Module):
     if(self.pe=="relative"):
       chunk_curr += self.pe_model(Q_chunks.reshape(B,T,d_k))[:, :z*w, :z*w].reshape(B,z,w,w)
       
-    if(pad_mask!=None):
-      mask = mask|pad_mask
+    mask = self.mask.unsqueeze(0).unsqueeze(0)
+    chunk_curr = chunk_curr.masked_fill(mask, float('-inf'))
 
-    chunk_curr = chunk_curr.masked_fill(self.mask.unsqueeze(0).unsqueeze(0), float('-inf'))
     chunk_curr = F.softmax(chunk_curr.float(),dim=-1).to(Q.dtype)
+    chunk_curr = torch.nan_to_num(chunk_curr, nan=0.0)
 
     chunk_curr = chunk_curr@V_chunks #(B,z,w,w) @ (B,z,w,d_k) -> (B,z,w,d_k)
     

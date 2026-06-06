@@ -40,53 +40,72 @@ class LocalSingleSelfDecoder(nn.Module):
     #mask_prev= torch.triu(torch.ones(self.w,self.w), diagonal=1).bool()
     self.register_buffer('mask_curr',mask_curr) 
 
-  def forward(self,xt,pad_mask=None):
-    Q = self.WQ(xt) #xt: (B,T,C) -> Q: (B,T,d_k) g
+def forward(self, xt, pad_mask=None):
+    Q = self.WQ(xt)
     K = self.WK(xt)
     V = self.WV(xt)
 
     w = self.w
-    B,T,d_k = Q.shape
+    B, T, d_k = Q.shape
+    z = T // w
 
-    if(self.pe=="rotatory"):
-      Q = self.pe_model(Q)
-      K = self.pe_model(K)
+    if self.pe == "rotatory":
+        Q = self.pe_model(Q)
+        K = self.pe_model(K)
 
-    Q_chunks = [Q[:,j:j+w,:] for j in range(0,T,w)] #Q_chunk[0] : (B,w,d_k)
-    K_chunks = [K[:,j:j+w,:] for j in range(0,T,w)]  #K_chunks.T(-2,-1) : (B,d_k,w) 
-    # @ = ( B,w,d_k) @ (B,d_k,w) -> (B,w,w) @(B,w,d_k) -> (B,w,d_k)
-    V_chunks = [V[:,j:j+w,:] for j in range(0,T,w)]
+    Q_chunks = [Q[:, j:j+w, :] for j in range(0, T, w)]
+    K_chunks = [K[:, j:j+w, :] for j in range(0, T, w)]
+    V_chunks = [V[:, j:j+w, :] for j in range(0, T, w)]
 
-    V_curr = torch.stack(V_chunks, dim=1)  # (B,z,w,d_k)
-    chunk_curr = chunk_curr @ V_curr  # (B,z,w,w) @ (B,z,w,d_k) -> (B,z,w,d_k)
+    # --- chunk_curr: each chunk attends to itself ---
+    # step 1: scores
+    chunk_curr = torch.stack([Q_chunks[i] @ K_chunks[i].transpose(-2,-1) 
+                               for i in range(z)], dim=1)  # (B,z,w,w)
 
-    if(self.pe=="attention"):
-      chunk_curr=self.pe_model(chunk_curr,self.head_n)
-    if(self.pe=="relative"):
-      chunk_curr += self.pe_model(Q).reshape(B, T//w, w, w)
+    # step 2: PE bias
+    if self.pe == "attention":
+        chunk_curr = self.pe_model(chunk_curr, self.head_n)
+    if self.pe == "relative":
+        chunk_curr += self.pe_model(Q).reshape(B, z, w, w)
 
+    # step 3: causal mask
+    chunk_curr = chunk_curr.masked_fill(
+        self.mask_curr.unsqueeze(0).unsqueeze(0), float('-inf')
+    )
 
-    if(pad_mask!=None):
-      mask_curr = mask_curr|pad_mask
-      
-    chunk_curr = chunk_curr.masked_fill(self.mask_curr.unsqueeze(0).unsqueeze(0), float('-inf'))
+    # step 4: softmax
     chunk_curr = F.softmax(chunk_curr.float(), dim=-1).to(Q.dtype)
-    chunk_curr = torch.stack([Q_chunks[i]@K_chunks[i].transpose(-2,-1) for i in range(len(Q_chunks))], dim=1)
-    
-    chunk_prev = torch.stack([Q_chunks[i]@K_chunks[i-1].transpose(-2,-1) for i in range(1,len(Q_chunks))], dim=1)
+    chunk_curr = torch.nan_to_num(chunk_curr, nan=0.0)
 
-    if(self.pe=="attention"):
-      chunk_prev=self.pe_model(chunk_prev,self.head_n)
-    if(self.pe=="relative"):
-      chunk_prev += self.pe_model(Q[:,w:,:]).reshape(B, T//w - 1, w, w)
+    # step 5: multiply V
+    V_curr = torch.stack(V_chunks, dim=1)       # (B,z,w,d_k)
+    chunk_curr = chunk_curr @ V_curr            # (B,z,w,d_k)
 
+    # --- chunk_prev: each chunk attends to previous chunk ---
+    # step 1: scores
+    chunk_prev = torch.stack([Q_chunks[i] @ K_chunks[i-1].transpose(-2,-1) 
+                               for i in range(1, z)], dim=1)  # (B,z-1,w,w)
+
+    # step 2: PE bias
+    if self.pe == "attention":
+        chunk_prev = self.pe_model(chunk_prev, self.head_n)
+    if self.pe == "relative":
+        chunk_prev += self.pe_model(Q[:, w:, :]).reshape(B, z-1, w, w)
+
+    # step 3: no causal mask for prev chunk — all previous tokens are in the past
+
+    # step 4: softmax
     chunk_prev = F.softmax(chunk_prev.float(), dim=-1).to(Q.dtype)
-    V_prev = torch.stack(V_chunks[1:], dim=1)  # (B,z-1,w,d_k)
-    chunk_prev = chunk_prev @ V_prev    
+    chunk_prev = torch.nan_to_num(chunk_prev, nan=0.0)
 
-    chunk0 = chunk_curr[:,0]  # (B,w,d_k)
-    chunk_i = [chunk_curr[:,i+1]+chunk_prev[:,i] for i in range(chunk_prev.shape[1])]
-    res = torch.cat([chunk0]+chunk_i, dim=1)  # (B,T,d_k)
+    # step 5: multiply V
+    V_prev = torch.stack(V_chunks[1:], dim=1)   # (B,z-1,w,d_k)
+    chunk_prev = chunk_prev @ V_prev            # (B,z-1,w,d_k)
 
-    #dropout
+    # --- combine ---
+    chunk0 = chunk_curr[:, 0]                   # (B,w,d_k)
+    chunk_i = [chunk_curr[:, i+1] + chunk_prev[:, i] 
+               for i in range(chunk_prev.shape[1])]
+    res = torch.cat([chunk0] + chunk_i, dim=1)  # (B,T,d_k)
+
     return self.dropModel(res)

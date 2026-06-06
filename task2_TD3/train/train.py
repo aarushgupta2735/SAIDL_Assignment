@@ -46,6 +46,10 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
+    torch.backends.cudnn.benchmark = True
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+
     # ── Environments ──────────────────────────────────────────────────────────
     num_envs = config.n_envs
     env_fns  = [lambda: gym.make("Hopper-v5", render_mode=None,exclude_current_positions_from_observation=config.exclude_x_vel) for _ in range(num_envs)]
@@ -72,7 +76,7 @@ def main():
     logger    = RLLogger(config, run_name="td3_mlp_hopper")
 
     episode_rewards = np.zeros(num_envs)
-    buffer_delay_rewards = np.zeros(shape=(num_envs,config.K_delayed_rewards-1))
+    buffer_delay_rewards = np.zeros(shape=(num_envs,config.K_delayed_rewards))
 
     # ── Training loop ────────────────a─────────────────────────────────────────
     for step in range(config.training_iterations):

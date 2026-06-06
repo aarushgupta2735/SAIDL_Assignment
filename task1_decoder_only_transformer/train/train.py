@@ -17,6 +17,11 @@ def main():
         print(f"Using device: {device} ({torch.cuda.get_device_name(0)})")
     else:
         print(f"Using device: {device}")
+    
+    torch.backends.cudnn.benchmark = True
+    torch.backends.cuda.matmul.allow_tf32 = True
+    torch.backends.cudnn.allow_tf32 = True
+
 
     # --- Tokenizer ---
     print("Loading tokenizer...")

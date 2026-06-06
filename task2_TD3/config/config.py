@@ -34,6 +34,7 @@ class TD3config():
     n_envs:int = 3
     BASE_SEED:int = 42
     eval_iterations: int = 5000
+    use_compile: bool = False  # set False on Windows
 
     #partial observability
         #Apply each modification independently to Hopper-v5; compare MLP-TD3 vs. TransformerTD3 (best L and L=32).

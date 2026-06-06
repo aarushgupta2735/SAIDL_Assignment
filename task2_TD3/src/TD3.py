@@ -7,7 +7,7 @@ from task2_TD3.config.config import TD3config
 from task2_TD3.src.Actor import Actor
 from task2_TD3.src.Critic import Critic
 from task2_TD3.src.ReplayBuffer import ReplayBuffer
-
+import platform
 
 
 class TD3(nn.Module):
@@ -44,6 +44,12 @@ class TD3(nn.Module):
         self.phi2_target = copy.deepcopy(self.phi2)
         for param in self.phi2_target.parameters():
             param.requires_grad = False
+            
+        #Added torch.compile for faster computation
+        if config.use_compile and platform.system() != "Windows":
+            self.theta = torch.compile(self.theta)
+            self.phi1  = torch.compile(self.phi1)
+            self.phi2  = torch.compile(self.phi2)
 
         self.D = buffer#<s,a,r,s',d> 
         

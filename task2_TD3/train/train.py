@@ -37,7 +37,7 @@ def main():
         dropout = 0.1, #INCREASE IF OVERFITTING CONTINUES
         pre_ln = True,
         attention = "standard", #local,sparse,mqa
-        positional_encoding = "sinusoidal", #rotatory,relative,attention  
+        positional_encoding = "relative", #rotatory,relative,attention  
         use_conv =False,
         conv_type = "none",        # "pre_attn", "interleaved" ## Not implemented for now: "depthwise", "gated_ffn"
         window_size=1
@@ -53,7 +53,7 @@ def main():
     # ── Environments ──────────────────────────────────────────────────────────
     num_envs = config.n_envs
     env_fns  = [lambda: gym.make("Hopper-v5", render_mode=None,exclude_current_positions_from_observation=config.exclude_x_vel) for _ in range(num_envs)]
-    envs     = gym.vector.AsyncVectorEnv(env_fns)
+    envs     = gym.vector.SyncVectorEnv(env_fns)
 
     eval_env = gym.make("Hopper-v5", render_mode=None,exclude_current_positions_from_observation=config.exclude_x_vel)
 

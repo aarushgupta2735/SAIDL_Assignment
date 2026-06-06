@@ -59,18 +59,19 @@ class StandardSingleSelfDecoder(nn.Module):
     
     h = h/self.d_k**0.5
 
-    # Ensure mask inherits the GPU device from the h tensor
-    self.mask = self.mask.to(h.device)
     mask = self.mask
     if(pad_mask!=None):
-      B,_ = pad_mask.shape
-      p1 = torch.repeat_interleave(pad_mask,T).reshape(B,T,T)
-      p2 = torch.repeat_interleave(pad_mask,T).reshape(B,T,T).transpose(-2,-1)
+      B,L = pad_mask.shape
+      p1 = torch.repeat_interleave(pad_mask,L).reshape(B,L,L)
+      p2 = torch.repeat_interleave(pad_mask,L).reshape(B,L,L).transpose(-2,-1)
       p = p1|p2
       mask = self.mask|p
 
-    h = h.masked_fill(mask[:h.shape[-2], :h.shape[-1]], float('-inf'))
-
-    a = F.softmax(h,dim=-1).to(Q.dtype)@V
-    #dropout
+    if pad_mask is not None:
+      h = h.masked_fill(mask, float('-inf'))
+    else:
+      h = h.masked_fill(mask[:h.shape[-2], :h.shape[-1]], float('-inf'))
+    a = F.softmax(h.float(), dim=-1)
+    a = torch.nan_to_num(a, nan=0.0)
+    a = a.to(Q.dtype) @ V    #dropout
     return self.dropModel(a)

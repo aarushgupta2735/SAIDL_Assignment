@@ -23,7 +23,7 @@ def main():
         training_iterations=1_000_000,
         n_envs=3,
         BASE_SEED=42,
-        use_transformer=False,
+        use_transformer=True,
         exclude_x_vel=False
     )
 
@@ -81,10 +81,16 @@ def main():
     # ── Training loop ────────────────a─────────────────────────────────────────
     for step in range(config.training_iterations):
         #Random action befo
-        actions = agent.select_action(observations, explore=True)
-
+        warmup_steps = tConfig.context_window * config.n_envs
+        if buffer.curr_D_size < warmup_steps:
+            #print(f"Step {step}: warmup, buffer={buffer.curr_D_size}/{warmup_steps}")
+            actions = np.stack([envs.single_action_space.sample() for _ in range(config.n_envs)])
+        else:
+            actions = agent.select_action(observations, explore=True)
+        
         next_obs_np, rewards, terminations, truncations, infos = envs.step(actions)
-
+        if np.isnan(rewards).any():
+            print(f"NaN reward at step {step}")
         #remove velocity componenets if velocity is hidden 
         next_obs = torch.tensor(next_obs_np,dtype=torch.float32,device=device)        
         if(config.is_velocity_hidden):
@@ -97,7 +103,7 @@ def main():
         #relay rewards if asked
         if(config.delay_rewards):
             if(step%config.K_delayed_rewards==0):
-                rewards+=buffer_delay_rewards.sum(axis=-1,dtype=torch.float32)
+                rewards+=buffer_delay_rewards.sum(axis=-1,dtype=np.float32)
                 buffer_delay_rewards = np.zeros(shape=(num_envs,config.K_delayed_rewards-1))
             else:
                 buffer_delay_rewards[:,step%config.K_delayed_rewards] = rewards

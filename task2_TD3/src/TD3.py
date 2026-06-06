@@ -28,6 +28,7 @@ class TD3(nn.Module):
         self.a_high = config.a_high
         
         self.on_RLHF = config.on_RLHF
+        self.actor_is_transformer = config.use_transformer
 
         self.n_envs = config.n_envs
         self.theta = Actor(config, tConfig, device=device) #takes in states and gives actions : policy
@@ -60,30 +61,32 @@ class TD3(nn.Module):
         self.polyak_coeff = config.polyak_coeff
         self.policy_delay = config.policy_delay
 
-    def select_action(self,curr_state,explore=True,n_envs_override=None):
-
-        if(self.actor_is_transformer):
-            #we need the history of curr_state
+    def select_action(self, curr_state, explore=True, n_envs_override=None):
+        if self.actor_is_transformer:
             batch_states = []
             batch_actions = []
             batch_masks = []
-            n = self.n_envs
-            if(n_envs_override!=None):
-                n = 1
+            n = self.n_envs if n_envs_override is None else 1
             for i in range(n):
-                states,actions,masks = self.D.get_current_history(i)
+                states, actions, masks = self.D.get_current_history(i)
                 batch_states.append(states)
                 batch_actions.append(actions)
                 batch_masks.append(masks)
-            action = self.theta(None,torch.stack(batch_states),torch.stack(batch_actions),torch.stack(batch_masks))
+
+            # CHANGE: if all padding, return random action instead of passing to transformer
+            stacked_masks = torch.stack(batch_masks)
+            if stacked_masks.all():
+                action = torch.zeros(n, self.A, device=self.device).uniform_(self.a_low, self.a_high)
+            else:
+                action = self.theta(None, torch.stack(batch_states), torch.stack(batch_actions), stacked_masks)
         else:
             action = self.theta(curr_state)
-        ##add guassian noise
-        if(explore):
-            noise = torch.normal(0,self.exp_noise,action.shape).to(device=self.device)
-            action+=noise
-            action = torch.clip(action,self.a_low,self.a_high) 
 
+        if explore:
+            noise = torch.normal(0, self.exp_noise, action.shape).to(device=self.device)
+            action += noise
+            action = torch.clip(action, self.a_low, self.a_high)
+        #print(f"action stats: min={action.min():.3f} max={action.max():.3f} nan={torch.isnan(action).any()}")
         return action.numpy(force=True)
 
     def update(self,curr_iter):

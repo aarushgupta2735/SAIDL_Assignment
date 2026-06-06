@@ -21,9 +21,9 @@ def main():
         noise_clip=0.5,
         exploration_noise=0.1,
         training_iterations=1_000_000,
-        n_envs=3,
+        n_envs=32,
         BASE_SEED=42,
-        use_transformer=True,
+        use_transformer=False,
         exclude_x_vel=False
     )
 
@@ -88,9 +88,9 @@ def main():
             actions = np.stack([envs.single_action_space.sample() for _ in range(config.n_envs)])
         else:
             actions = agent.select_action(observations, explore=True)
-        t0 = time.time()
+
         next_obs_np, rewards, terminations, truncations, infos = envs.step(actions)
-        print(f"update: {time.time()-t0:.3f}s")
+        
         if np.isnan(rewards).any():
             print(f"NaN reward at step {step}")
         #remove velocity componenets if velocity is hidden 
@@ -152,7 +152,7 @@ def main():
                     if(config.use_transformer and buffer.curr_D_size==0):
                         a = eval_env.action_space.sample()
                     else:
-                        a = agent.select_action(s_t, explore=False)
+                        a = agent.select_action(s_t, explore=False,n_envs_override=1)
                     s, r, term, trunc, _ = eval_env.step(a[0])
                     ep_ret += r
                     done_eval = term or trunc

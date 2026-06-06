@@ -47,9 +47,10 @@ def main():
     # NOTE: change experiment_name, attention, positional_encoding per run
     config = TransformerConfig(
         vocab_size          = tokenizer.n_vocab,
-        attention           = "sparse", #local,sparse,mqa,standard
+        attention           = "local", #local,sparse,mqa,standard
         positional_encoding = "sinusoidal", #rotatory,relative,attention,sinusoidal
-        context_window = 1024
+        context_window = 1024,
+        window_size=128
     )
     train_config = TrainConfig()
 
@@ -82,7 +83,7 @@ def main():
     model.load_state_dict(best_ckpt["model"])
     print(f"Best val loss: {best_ckpt['val_loss']:.4f}")
 
-    logger.log_inference_latency(model)
+    logger.log_inference_latency(model,config)
 
     '''# --- Post-training: sample generation ---
     print("\n--- Sample Generation ---")

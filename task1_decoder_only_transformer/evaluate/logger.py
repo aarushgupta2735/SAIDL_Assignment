@@ -107,10 +107,10 @@ class ExperimentLogger:
     # ------------------------------------------------------------------
 
     @torch.no_grad()
-    def log_inference_latency(self, model: torch.nn.Module):
+    def log_inference_latency(self, model: torch.nn.Module,config):
         model.eval()
-        prompt_len, gen_len, repeats = 64, 128, 20
-
+        gen_len, repeats = 128, 20
+        prompt_len = config.contex
         dummy_input = torch.randint(
             0, self.config.vocab_size, (1, prompt_len), device=self.device
         )

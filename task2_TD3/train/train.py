@@ -24,6 +24,11 @@ def main():
         BASE_SEED=42,
         use_transformer=False,
         exclude_x_vel=False,
+        #PO
+        is_velocity_hidden = True ,
+        add_observation_noise =  False,
+        delay_rewards = False,
+
     )
 
     tConfig = TransformerConfig(
@@ -128,13 +133,22 @@ def main():
                 s, _ = eval_env.reset()
                 done_eval = False
                 ep_ret = 0.0
+    
                 while not done_eval:
                     s_t = torch.tensor(s, dtype=torch.float32, device=device).unsqueeze(0)
+                    
+                    if config.is_velocity_hidden:
+                        s_t = torch.cat((s_t[:, :5], s_t[:, 7:]), dim=-1)
+                    if config.add_observation_noise:
+                        s_t += torch.normal(0, config.observation_noise_std, s_t.shape, device=device)
+
                     a = agent.select_action(s_t, explore=False, n_envs_override=1)
+
                     s, r, term, trunc, _ = eval_env.step(a[0])
                     ep_ret += r
                     done_eval = term or trunc
                 returns.append(ep_ret)
+                
             logger.log_eval(step=step, mean_return=float(np.mean(returns)),
                              std_return=float(np.std(returns)),
                              min_return=float(np.min(returns)),

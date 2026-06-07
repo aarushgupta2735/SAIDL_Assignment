@@ -110,7 +110,7 @@ class ExperimentLogger:
     def log_inference_latency(self, model: torch.nn.Module,config):
         model.eval()
         gen_len, repeats = 128, 20
-        prompt_len = config.contex
+        prompt_len = config.context_window
         dummy_input = torch.randint(
             0, self.config.vocab_size, (1, prompt_len), device=self.device
         )

@@ -47,10 +47,12 @@ def main():
     # NOTE: change experiment_name, attention, positional_encoding per run
     config = TransformerConfig(
         vocab_size          = tokenizer.n_vocab,
-        attention           = "standard", #local,sparse,mqa,standard
+        attention           = "mqa", #local,sparse,mqa,standard
         positional_encoding = "sinusoidal", #rotatory,relative,attention,sinusoidal
-        context_window = 2048,
-        window_size=128
+        context_window = 512,
+        window_size=128,
+        use_conv = False,
+        #conv_type = "pre_attn" #"pre_attn", "interleaved"
     )
     train_config = TrainConfig()
 

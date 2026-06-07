@@ -82,6 +82,7 @@ def main():
         else:
             actions = agent.select_action(observations, explore=True)
 
+
         next_obs_np, rewards, terminations, truncations, infos = envs.step(actions)
         dones = terminations | truncations
 

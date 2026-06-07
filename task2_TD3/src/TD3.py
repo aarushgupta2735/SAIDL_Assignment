@@ -8,7 +8,7 @@ from task2_TD3.config.config import TD3config
 from task2_TD3.src.Actor import Actor
 from task2_TD3.src.Critic import Critic
 from task2_TD3.src.ReplayBuffer import ReplayBuffer
-
+import time
 
 class TD3(nn.Module):
     def __init__(self, config: TD3config, tConfig: TransformerConfig, buffer, device):
@@ -89,6 +89,9 @@ class TD3(nn.Module):
         with torch.no_grad():
             if self.actor_is_transformer:
                 hs, ha, hm = self.D.batch_get_history((idx + 1) % self.D_size)
+                t0 = time.time(); self.D.batch_get_history(idx); print(f"history: {time.time()-t0:.3f}s")
+                t0 = time.time(); self.theta(None, hs, ha, hm); print(f"actor fwd: {time.time()-t0:.3f}s")
+
                 A_ = self.theta_target(None, hs, ha, hm)
             else:
                 A_ = self.theta_target(S_)
@@ -111,6 +114,7 @@ class TD3(nn.Module):
         loss2 = ((self.phi2(S, A) - target) ** 2).mean()
         loss2.backward()
         self.phi2_optimiser.step()
+
 
         actor_loss = torch.tensor(0.0)
         if curr_iter % self.policy_delay == 0:

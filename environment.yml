@@ -1,3 +1,22 @@
-!pip install gymnasium
-!pip install mujoco
-!pip install imageio
+name: saidl2026
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.12
+  - pip
+
+  - pip:
+      - torch
+      - torchvision
+      - torchaudio
+      - "gymnasium[mujoco]"
+      - mujoco>=2.3.3
+      - wandb
+      - tiktoken
+      - numpy
+      - dataclasses
+      - matplotlib
